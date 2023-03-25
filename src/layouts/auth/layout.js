@@ -13,7 +13,7 @@ export const Layout = (props) => {
       component="main"
       sx={{
         display: 'flex',
-        flex: '1 1 auto'
+        flex: '1 1 auto',
       }}
     >
       <Grid
