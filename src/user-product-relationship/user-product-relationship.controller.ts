@@ -19,7 +19,7 @@ export class UserProductRelationshipController {
     @Get()
     @Roles('customer')
     async getProductsByUserFiltering(@Request() req:any){
-        return await this.userProductRelationshipService.getProductsByUserFiltering(req.user.sub);
+        return await this.userProductRelationshipService.getRecommendationProduct(req.user.sub);
     }
 
 }

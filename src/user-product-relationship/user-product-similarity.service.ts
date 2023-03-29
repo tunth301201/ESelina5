@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { UserProductRelationship } from './schemas/user-product-relationship.schema';
 import { UserProductSimilarity, UserProductSimilarityDocument } from './schemas/user-product-similarity.schema';
 import { UserProductRelationshipService } from './user-product-relationship.service';
@@ -14,64 +14,73 @@ export class UserProductSimilarityService {
             private userProductRelationshipService: UserProductRelationshipService,
     ){}
 
-    async calculateUserProductSimilarity(userId: string): Promise<UserProductSimilarity[]>{
-        // Get all user-product ratings for the current user
-        const userProductRatings = await this.userProductRelationshipService.getUserProductRatingsByUserId(userId);
 
-        // Get a list of all users who have rated the same products as the current user
-        const userProductRaters = await this.userProductRelationshipService.getUsersWhoRatedSameProducts(userId);
+    async calculateUserSimilarities(userId: string): Promise<UserProductSimilarity[]> {
+      // Find all the products that the current user has rated
+      const userProducts = await this.userProductRelationshipService.getProductsOfCurrentUser(userId);
+      const productIds = userProducts.map((userProduct) => userProduct.product_id);
 
-        // Calculate the cosine similarity between the current user and each of the other users
-        for (const userProductRater of userProductRaters) {
-            if (userProductRater.user_id.toString() !== userId) {
-            const sharedProductRatings = await this.userProductRelationshipService.getSharedProductRatings(userId, userProductRater.user_id.toString());
+      // Find all the users who have rated the same products as the current user
+      const users = await this.userProductRelationshipService.geUsersRatedSameProducts(userId, productIds);
 
+      // Calculate the similarity between the current user and each of the other users
+      const similarities = [];
+      for (const user of users) {
+        const otherUserId = user;
+        let similarityScore = await this.calculateCosineSimilarity(userId, otherUserId.toString());
 
-            // console.log("product duoc rate boi nguoi khac==="+sharedProductRatings)
+        similarities.push({ user_id: userId, similarUser_id: otherUserId, similarity_score: similarityScore });
+      }
 
-            const similarityScore = await this.cosineSimilarity(userProductRatings, sharedProductRatings);
-            console.log("do tuong dong===="+similarityScore);
+      // Save the similarities to the UserProductSimilarity table
+      await this.userProductSimilarityModel.deleteMany({ user_id: userId });
+      const result = await this.userProductSimilarityModel.insertMany(similarities);
 
-            // Save the similarity score in the UserProductSimilarity table
-            await this.userProductSimilarityModel.create({
-                user_id: userId,
-                similarUser_id: userProductRater.user_id,
-                similarity_score: similarityScore
-            });
-            }
-        } 
-
-        return await this.userProductSimilarityModel.find({user_id: userId});
+      return result as UserProductSimilarity[];
     }
 
-    async cosineSimilarity(a: UserProductRelationship[], b: UserProductRelationship[]): Promise<number> {
-        // create a map of product IDs to ratings for each user
-        const aMap = new Map<string, number>();
-        const bMap = new Map<string, number>();
-        for (const rating of a) {
-          aMap.set(rating.product_id.toString(), rating.rating);
+    async calculateCosineSimilarity(userId: string, otherUserId: string): Promise<number> {
+      const userRatings = await this.userProductRelationshipService.getUserProductRatingsByUserId(userId);
+      const otherUserRatings = await this.userProductRelationshipService.getUserProductRatingsByUserId(otherUserId);
+    
+      const userRatingsMap = new Map<string, number>();
+      const otherUserRatingsMap = new Map<string, number>();
+    
+      // create maps of product ratings for both users
+      userRatings.forEach((rating) => {
+        userRatingsMap.set(rating.product_id.toString(), rating.rating);
+      });
+
+    
+      otherUserRatings.forEach((rating) => {
+        otherUserRatingsMap.set(rating.product_id.toString(), rating.rating);
+      });
+
+    
+      // calculate cosine similarity between the two users
+      let dotProduct = 0;
+      let userSquaredSum = 0;
+      let otherUserSquaredSum = 0;
+    
+      userRatingsMap.forEach((rating, productId) => {
+        if (otherUserRatingsMap.has(productId)) {
+          const otherUserRating = otherUserRatingsMap.get(productId);
+          dotProduct += rating * otherUserRating;
         }
-        for (const rating of b) {
-          bMap.set(rating.product_id.toString(), rating.rating);
-        }
-      
-        // get the set of common product IDs
-        const commonIds = new Set([...aMap.keys()].filter(id => bMap.has(id)));
-      
-        // calculate the dot product and magnitudes
-        let dotProduct = 0;
-        let aMagnitude = 0;
-        let bMagnitude = 0;
-        for (const id of commonIds) {
-          const aRating = aMap.get(id) as number;
-          const bRating = bMap.get(id) as number;
-          dotProduct += aRating * bRating;
-          aMagnitude += aRating ** 2;
-          bMagnitude += bRating ** 2;
-        }
-      
-        // calculate the cosine similarity
-        const denominator = Math.sqrt(aMagnitude) * Math.sqrt(bMagnitude);
-        return denominator === 0 ? 0 : dotProduct / denominator;
+        userSquaredSum += rating ** 2;
+      });
+    
+      otherUserRatingsMap.forEach((rating) => {
+        otherUserSquaredSum += rating ** 2;
+      });
+
+      const denominator = Math.sqrt(userSquaredSum) * Math.sqrt(otherUserSquaredSum);
+      if (denominator === 0) {
+        return 0;
       }
+
+      let similarityScore = dotProduct/denominator;
+      return similarityScore;
+    }
+    
 }
