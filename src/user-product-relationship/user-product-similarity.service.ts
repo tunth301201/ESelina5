@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { UserProductRelationship } from './schemas/user-product-relationship.schema';
+import { Model } from 'mongoose';
 import { UserProductSimilarity, UserProductSimilarityDocument } from './schemas/user-product-similarity.schema';
 import { UserProductRelationshipService } from './user-product-relationship.service';
 

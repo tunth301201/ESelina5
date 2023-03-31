@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Product, ProductDocument } from './schemas/product.schema';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { PromotionProduct, PromotionProductDocument } from '../promotion/schemas/promotion-product.schema';
@@ -84,5 +84,15 @@ export class ProductService {
       await product.save();
     }
   }
-  
+
+  // Loop through all products
+  async loopAllProducts(): Promise<any>{
+    return await this.productModel.find().select('_id').lean();
+  }
+
+  // Get products by similar IDs
+  async getProductBySimilarIds(similarProductIds: Types.ObjectId[]): Promise<Product[]>{
+    return await this.productModel.find({ _id: { $in: similarProductIds } }).lean();
+  }
+
 }
