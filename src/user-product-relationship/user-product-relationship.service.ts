@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Product } from 'src/product/schemas/product.schema';
@@ -208,7 +208,53 @@ export class UserProductRelationshipService {
           product_id: { $in: [productId, otherProductId] },
         });
       }
+
+
+  
+
+// COLLAB FILTERING
+      async getRatedProductsByUser(userId: string): Promise<UserProductRelationship[]> {
+        return this.userProductRelationshipModel.find({ user_id: userId }).exec();
+      }
+
+      async getRatedProductsByUsers(userIds: string[]): Promise<UserProductRelationship[]> {
+        return this.userProductRelationshipModel.find({ user_id: { $in: userIds } }).exec();
+      }
+
+      async getUserIdsByRatedProducts(ratedProducts: UserProductRelationship[]): Promise<UserProductRelationship[]> {
+        const userIds: UserProductRelationship[] = [];
+        for (const ratedProduct of ratedProducts) {
+          const users = await this.userProductRelationshipModel
+            .find({ product_id: ratedProduct.product_id })
+            .distinct('user_id');
+          for (const user of users) {
+            const userProductRelationship = await this.userProductRelationshipModel.findOne({
+              user_id: user,
+              product_id: ratedProduct.product_id,
+            });
+            if (userProductRelationship) {
+              userIds.push(userProductRelationship);
+            }
+          }
+        }
+        return userIds;
+      }
       
 
-    
+      async getUnratedProductsByUser(other_userId: string, current_ratedProducts: UserProductRelationship[]): Promise<UserProductRelationship[]> {
+      
+        const ratedProductIds = current_ratedProducts.map(p => p.product_id);
+
+        // Lấy ra danh sách sản phẩm chưa được đánh giá bởi người dùng hiện tại
+        const unratedProducts = await this.userProductRelationshipModel
+          .find({ 
+            user_id: other_userId,
+            product_id: { $nin: ratedProductIds },
+            rating: { $ne: null }
+          })
+          .exec();;
+
+        return unratedProducts;
+      }
+      
 }

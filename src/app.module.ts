@@ -13,12 +13,13 @@ import { CartModule } from './cart/cart.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { UserProductRelationshipModule } from './user-product-relationship/user-product-relationship.module';
 import { ProductProductRelationshipModule } from './product-product-relationship/product-product-relationship.module';
+import { UserProductCollabModule } from './user-product-collab/user-product-collab.module';
 import 'dotenv/config';
 
 @Module({
   imports: [
     MongooseModule.forRoot(process.env.MONGO_URI),
-    UserModule, AuthModule, SharedModule, CategoryModule, ProductModule, PromotionModule, OrderModule, CartModule, FeedbackModule, UserProductRelationshipModule, ProductProductRelationshipModule],
+    UserModule, AuthModule, SharedModule, CategoryModule, ProductModule, PromotionModule, OrderModule, CartModule, FeedbackModule, UserProductRelationshipModule, ProductProductRelationshipModule, UserProductCollabModule],
   controllers: [AppController],
   providers: [AppService],
 })
