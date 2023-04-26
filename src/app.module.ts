@@ -15,11 +15,15 @@ import { UserProductRelationshipModule } from './user-product-relationship/user-
 import { ProductProductRelationshipModule } from './product-product-relationship/product-product-relationship.module';
 import { UserProductCollabModule } from './user-product-collab/user-product-collab.module';
 import 'dotenv/config';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
     MongooseModule.forRoot(process.env.MONGO_URI),
-    UserModule, AuthModule, SharedModule, CategoryModule, ProductModule, PromotionModule, OrderModule, CartModule, FeedbackModule, UserProductRelationshipModule, ProductProductRelationshipModule, UserProductCollabModule],
+    UserModule, AuthModule, SharedModule, CategoryModule, ProductModule, PromotionModule, OrderModule, CartModule, FeedbackModule, UserProductRelationshipModule, ProductProductRelationshipModule, UserProductCollabModule,
+   
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

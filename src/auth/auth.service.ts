@@ -28,7 +28,7 @@ export class AuthService {
       throw new Error('Invalid password.');
     }
     const token = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
-    return { token };
+    return token;
   }
 
   async validateUser(email: string, password: string) {

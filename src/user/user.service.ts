@@ -15,7 +15,7 @@ export class UserService {
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
         const createdUser = new this.userModel({
         ...createUserDto,
-        birthday: await this.formatDateInput(createUserDto.birthday),
+        birthday: new Date(parseInt(createUserDto.birthday)),
         password: hashedPassword,
         });
         return createdUser.save();

@@ -46,6 +46,13 @@ export class OrderController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Get('/orderItems/:orderId')
+    @Roles('customer')
+    async getOrdersByOrderId(@Param('orderId') orderId: string){
+        return this.orderService.getOrdersById(orderId);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Get('/search')
     @Roles('seller')
     async searchOrderByOrderNumber(@Query('orderNumber') orderNumber: string, @Request() req: any){

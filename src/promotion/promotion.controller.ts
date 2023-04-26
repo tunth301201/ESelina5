@@ -24,6 +24,7 @@ export class PromotionController {
     @Post()
     @Roles('seller')
     async createPromotion(@Body() createPromotionDto: CreatePromotionDto): Promise<Promotion> {
+        console.log(createPromotionDto);
         return this.promotionService.createPromotion(createPromotionDto);
     }
 

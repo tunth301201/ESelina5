@@ -21,7 +21,7 @@ export class Product extends Document {
   stock: number;
 
   @Prop({ required: true })
-  image: Buffer[];
+  images: [{ data: Buffer, contentType: String }];
 
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   category_id: Types.ObjectId;

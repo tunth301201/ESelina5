@@ -35,6 +35,6 @@ export class Order extends Document{
 
     @Prop({ type: [{ product_id: { type: Types.ObjectId, ref: 'Product' }, quantity: Number }], default: [] })
     order_items: { product_id: Types.ObjectId, quantity: number }[];
-}
+} 
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

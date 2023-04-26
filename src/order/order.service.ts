@@ -61,11 +61,15 @@ export class OrderService {
       }
 
       async getAllOrders(): Promise<Order[]> {
-        return this.orderModel.find().exec();
+        return this.orderModel.find().populate('user_id').exec();
       }
 
       async getOrdersByUserId(userId: string): Promise<Order[]> {
-        return this.orderModel.find({user_id: userId});
+        return this.orderModel.find({user_id: userId}).populate('user_id').exec();
+      }
+
+      async getOrdersById(orderId: string): Promise<Order> {
+        return this.orderModel.findById(orderId).populate('user_id').exec();
       }
       
       async searchOrderByOrderNumber(orderNumber: string): Promise<Order> {

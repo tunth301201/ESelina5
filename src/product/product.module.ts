@@ -6,13 +6,16 @@ import { Promotion, PromotionSchema } from 'src/promotion/schemas/promotion.sche
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 import { Product, ProductSchema } from './schemas/product.schema';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [MongooseModule.forFeature([
     { name: Product.name, schema: ProductSchema },
     { name: Promotion.name, schema: PromotionSchema },
     { name: PromotionProduct.name, schema: PromotionProductSchema },
-  ]), AuthModule],
+  ]), AuthModule,
+  ],
   controllers: [ProductController],
   providers: [ProductService],
   exports: [ProductService],

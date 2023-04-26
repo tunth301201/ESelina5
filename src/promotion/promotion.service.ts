@@ -18,8 +18,8 @@ export class PromotionService {
     const { products, start_date, end_date, ...rest } = promotionDto;
     const createdPromotion = new this.promotionModel({
         ...rest,
-        start_date: await this.formatDateInput(start_date),
-        end_date: await this.formatDateInput(end_date),
+        start_date: start_date,
+        end_date: end_date,
     });
     await createdPromotion.save();
 
@@ -55,11 +55,11 @@ export class PromotionService {
       id,
       {
         ...rest,
-        start_date: await this.formatDateInput(start_date),
-        end_date: await this.formatDateInput(end_date),
+        start_date: start_date,
+        end_date: end_date,
       },
       {
-        new: true,
+        new: true, 
       },
     );
 

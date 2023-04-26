@@ -22,8 +22,6 @@ export class CreateProductDto {
   @IsNumber()
   discount: number;
 
-  image: Buffer[];
-
   @IsNotEmpty()
   @IsString()
   category_id: string;

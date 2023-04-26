@@ -17,10 +17,10 @@ export class CreatePromotionDto {
   discount: number;
 
   @IsNotEmpty()
-  start_date: string;
+  start_date: Date;
 
   @IsNotEmpty()
-  end_date: string;
+  end_date: Date;
 
   products: Types.ObjectId[];
 }

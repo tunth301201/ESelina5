@@ -21,7 +21,6 @@ export class CartService {
         const {product_id, quantity} = productCartDto;
         let cart = await this.cartModel.findOne({user_id: userId});
         
-
         if (!cart){
             cart = new this.cartModel({user_id: userId});
             cart.cart_items.push({
@@ -73,6 +72,7 @@ export class CartService {
         let totalAmountCart = 0;
         for (const cartItem of cart_items) {
             const newProductCart = await this.productService.getOneProduct(cartItem.product_id.toString());
+            console.log(newProductCart)
             if ((newProductCart).discount!=0)
                 totalAmountCart += (newProductCart).discount * cartItem.quantity;
             else 

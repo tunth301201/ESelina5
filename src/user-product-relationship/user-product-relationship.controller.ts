@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Body, Post } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Body, Post, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/auth/roles/roles.decorator';
 import { RolesGuard } from 'src/auth/roles/roles.guard';
@@ -21,5 +21,11 @@ export class UserProductRelationshipController {
     async getProductsByUserFiltering(@Request() req:any){
         return await this.userProductRelationshipService.getRecommendationProduct(req.user.sub);
     }
+
+    @Get('/rating/:productId')
+    async getProductRating(@Param('productId') productId: string){
+        return await this.userProductRelationshipService.calculateProductRating(productId);
+    }
+
 
 }
