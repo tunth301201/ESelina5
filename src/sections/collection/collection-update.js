@@ -7,31 +7,46 @@ import {
     Divider,
     CardActions
   } from '@mui/material';
-  import { useCallback, useRef } from 'react';
+  import { useCallback, useRef, useState } from 'react';
   import PropTypes from 'prop-types';
+  import { updateCategory } from 'src/api/apiService';
   
   const UpdateCollection = (props) => {
+    const { Collection, onSuccess, onSubmit } = props;
 
-    // Get Collection (id, name, ...) from Collections.js
-    const {
-        Collection
-    } = props;
-  
-    // const handleChange = useCallback(
-    //   (event) => {
-    //     setValues((prevState) => ({
-    //       ...prevState,
-    //       [event.target.name]: event.target.value
-    //     }));
-    //   },
-    //   []
-    // );
-  
+    const [values, setValues] = useState({
+      name: Collection.name,
+      description: Collection.description,
+    });
+
+    const handleChange = useCallback(
+      (event) => {
+        setValues((prevState) => ({
+          ...prevState,
+          [event.target.name]: event.target.value
+        }));
+      },
+      []
+    );
+
     const handleSubmit = useCallback(
       (event) => {
         event.preventDefault();
+        try {
+          const upCategory = {
+            name: values.name,
+            description: values.description
+          }
+          console.log(Collection)
+          updateCategory(Collection.id, upCategory).then((res) => {
+            onSubmit(res.data);
+          });
+          onSuccess(); 
+        } catch (e) {
+          console.log('Error updating category:', e);
+        }
       },
-      []
+      [values.name, values.description, onSuccess]
     );
   
   
@@ -59,9 +74,9 @@ import {
                     fullWidth
                     label="Name"
                     name="name"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
-                    defaultValue={Collection.name}
+                    defaultValue={values.name}
                   />
                 </Grid>
                
@@ -73,9 +88,9 @@ import {
                     fullWidth
                     label="Description"
                     name="description"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
-                    defaultValue={Collection.description}
+                    defaultValue={values.description}
                     multiline
                   />
   
@@ -87,7 +102,7 @@ import {
           </CardContent>
           <Divider />
           <CardActions sx={{ justifyContent: 'flex-end' }} style={{ justifyContent: 'center' }}>
-            <Button variant="contained">
+            <Button variant="contained" type='submit'>
               Save
             </Button>
           </CardActions>

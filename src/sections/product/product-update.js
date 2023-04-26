@@ -7,50 +7,73 @@ import {
     Divider,
     CardActions
   } from '@mui/material';
-  import { useCallback, useRef } from 'react';
+  import { useCallback, useEffect, useRef, useState } from 'react';
   import PropTypes from 'prop-types';
-  
-  const collections = [
-    {
-      value: 'Clothes',
-      label: 'Clothes'
-    },
-    {
-      value: 'Shoes',
-      label: 'Shoes'
-    },
-    {
-      value: 'Book',
-      label: 'Book'
-    },
-    {
-      value: 'Phone',
-      label: 'Phone'
-    }
-  ];
+import { getOneProduct } from 'src/api/apiService';
+import axios from 'axios';
+
   
   const UpdateProduct = (props) => {
 
-    // Get product (id, name, ...) from products.js
-    const {
-        product
-    } = props;
+    const { Product, Collection, onSuccess, onSubmit } = props;
+
+    const collections = Collection;
+    const productDetail = Product;
+
+    const [values, setValues] = useState({
+      name: productDetail.name,
+      description: productDetail.description,
+      price: productDetail.price,
+      stock: productDetail.stock,
+      discount: productDetail.discount,
+      collection: productDetail.category_id,
+    });
   
-    // const handleChange = useCallback(
-    //   (event) => {
-    //     setValues((prevState) => ({
-    //       ...prevState,
-    //       [event.target.name]: event.target.value
-    //     }));
-    //   },
-    //   []
-    // );
+    const handleChange = useCallback(
+      (event) => {
+        setValues((prevState) => ({
+          ...prevState,
+          [event.target.name]: event.target.value
+        }));
+      },
+      []
+    );
+
+    const [selectedCollection, setSelectedCollection] = useState(productDetail.category_id._id);
+    const handleSelectChange = (event) => {
+      setSelectedCollection(event.target.value);
+    };
+    const [updateProduct, setUpdateProduct] = useState(null);
   
     const handleSubmit = useCallback(
       (event) => {
         event.preventDefault();
+        try {
+          const formData = new FormData();
+          formData.append('name', values.name);
+          formData.append('description', values.description);
+          formData.append('price', values.price);
+          formData.append('stock', values.stock);
+          formData.append('discount', values.discount);
+          formData.append('category_id', selectedCollection);
+          uploadedFiles.forEach((file) => {
+            formData.append('file', file);
+          })
+
+          axios.put(`http://localhost:4000/product/${productDetail._id}`, formData,
+          {headers: {
+              'Content-Type': 'multipart/form-data',
+            },}).then((res) => {
+                setUpdateProduct(res.data);
+                onSubmit(res.data);
+            
+            });
+          // onSuccess();
+        } catch (e) {
+          console.log('Error creating product:', e);
+        }
       },
-      []
+      [updateProduct, onSuccess]
     );
   
     const UploadBox = styled(Box)({
@@ -70,10 +93,12 @@ import {
       },
     });
   
+    const [uploadedFiles, setUploadedFiles] = useState([]);
     const inputRef = useRef(null);
-  
-    const handleSelectFileClick = () => {
-      inputRef.current.click();
+
+    const handleFileChange = (event) => {
+      const files = event.target.files;
+      setUploadedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
     };
   
     return (
@@ -102,9 +127,9 @@ import {
                     helperText="Please specify the product name"
                     label="Name"
                     name="name"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
-                    defaultValue={product.name}
+                    value={values.name}
                   />
                 </Grid>
                 <Grid
@@ -115,18 +140,18 @@ import {
                     fullWidth
                     label="Collection"
                     name="collection"
-                    // onChange={handleChange}
+                    onChange={handleSelectChange}
                     required
                     select
                     SelectProps={{ native: true }}
-                    value={product.collection}
+                    value={selectedCollection}
                   >
                     {collections.map((option) => (
                       <option
-                        key={option.value}
-                        value={option.value}
+                        key={option._id}
+                        value={option._id}
                       >
-                        {option.label}
+                        {option.name}
                       </option>
                     ))}
                   </TextField>
@@ -137,36 +162,35 @@ import {
                 >
   
                   <Box>
-                      <label htmlFor="upload-file">
-                          <UploadBox component="div">
-                              <input
-                                  ref={inputRef}
-                                  accept="image/*,.png,.gif,.jpeg,.jpg"
-                                  id="upload-file"
-                                  multiple
-                                  type="file"
-                                  // onChange={handleChange}
-                                  hidden
-                              />
-                              <Box sx={{ mt: 2 }}>
-                                  <Button 
-                                      variant="outlined" 
-                                      size="medium" 
-                                      type='file'
-                                      onClick={handleSelectFileClick}
-                                      >
-                                  Select files
-                                  </Button>
-                              </Box>
-                              <Box sx={{ mt: 1 }}>
+                        <label htmlFor="upload-file">
+                            <UploadBox component="div">
+                                <input
+                                    ref={inputRef}
+                                    accept="image/*,.png,.gif,.jpeg,.jpg"
+                                    id="upload-file"
+                                    multiple
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    hidden
+                                />
+                                <Box sx={{ mt: 1 }}>
+                                  {uploadedFiles.length == 0 ? 
                                   <small>Upload product image</small>
-                              </Box>
-                              <Box sx={{ mt: 2 }}>
-                                <img src={product.image} alt="Product image" style={{ width: 80, height: 80 }} />
-                              </Box>
-                          </UploadBox>
-                      </label>
-                      </Box>
+                                  : 
+                                  uploadedFiles.map((file, index) => (
+                                    <img
+                                      key={index}
+                                      src={URL.createObjectURL(file)}
+                                      alt={`Uploaded Image ${index + 1}`}
+                                      style={{ width: "100px", height: "100px", margin: "10px" }}
+                                    />
+                                  ))
+                                  }
+                                    
+                                </Box>
+                            </UploadBox>
+                        </label>
+                        </Box>
   
                 </Grid>
                 <Grid
@@ -177,38 +201,54 @@ import {
                     fullWidth
                     label="Description"
                     name="description"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
                     multiline
+                    value={values.description}
                   />
   
                 </Grid>
                 <Grid
                   xs={12}
-                  md={6}
+                  md={4}
                 >
                   <TextField
                     fullWidth
                     label="Stock"
                     name="stock"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
                     type="number"
-                    defaultValue={product.stock}
+                    value={values.stock}
                   />
                 </Grid>
                 <Grid
                   xs={12}
-                  md={6}
+                  md={4}
                 >
                   <TextField
                     fullWidth
                     label="Price"
                     name="price"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
                     type="number"
-                    defaultValue={product.price}
+                    value={values.price}
+                  />
+                </Grid>
+
+                <Grid
+                  xs={12}
+                  md={4}
+                >
+                  <TextField
+                    fullWidth
+                    label="Discount"
+                    name="discount"
+                    onChange={handleChange}
+                    required
+                    type="number"
+                    value={values.discount}
                   />
                 </Grid>
                 
@@ -217,7 +257,7 @@ import {
           </CardContent>
           <Divider />
           <CardActions sx={{ justifyContent: 'flex-end' }} style={{ justifyContent: 'center' }}>
-            <Button variant="contained">
+            <Button variant="contained" type='submit'>
               Save
             </Button>
           </CardActions>

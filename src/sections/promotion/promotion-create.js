@@ -10,124 +10,37 @@ OutlinedInput,
 InputAdornment,
 SvgIcon
 } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { format } from 'date-fns';
 import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
-
+import PropTypes from 'prop-types';
+import { createPromotion } from 'src/api/apiService';
   
-  const CreatePromotion = () => {
-    // const [values, setValues] = useState({
-    //   firstName: 'Anika',
-    //   lastName: 'Visser',
-    //   email: 'demo@devias.io',
-    //   phone: '',
-    //   state: 'los-angeles',
-    //   country: 'USA'
-    // });
-  
-    // const handleChange = useCallback(
-    //   (event) => {
-    //     setValues((prevState) => ({
-    //       ...prevState,
-    //       [event.target.name]: event.target.value
-    //     }));
-    //   },
-    //   []
-    // );
+  const CreatePromotion = (props) => {
+    const { Product, onSuccess, onSubmit } = props;
+    const products = Product;
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
-    const items = [
-      {
-        id: '5e887ac47eed253091be10cb',
-        image: '/assets/avatars/avatar-carson-darrin.png',
-        name: 'Carson Darrin',
-        collection: 'Clothes',
-        stock: 5,
-        price: 12.5,
-        createdAt: 1555016400000,
+    const [values, setValues] = useState({
+      name: "",
+      description: "",
+      discount: 0,
+      start_date: Date.now(),
+      end_date: Date.now(),
+    });
+  
+    const handleChange = useCallback(
+      (event) => {
+        setValues((prevState) => ({
+          ...prevState,
+          [event.target.name]: event.target.value
+        }));
       },
-      {
-        id: '5e887b209c28ac3dd97f6db5',
-        image: '/assets/avatars/avatar-fran-perez.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1555016400000,
-      },
-      {
-        id: '5e887b7602bdbc4dbb234b27',
-        image: '/assets/avatars/avatar-jie-yan-song.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554930000000,
-      },
-      {
-        id: '5e86809283e28b96d2d38537',
-        image: '/assets/avatars/avatar-anika-visser.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554757200000,
-      },
-      {
-        id: '5e86805e2bafd54f66cc95c3',
-        image: '/assets/avatars/avatar-miron-vitold.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554670800000,
-      },
-      {
-        id: '5e887a1fbefd7938eea9c981',
-        image: '/assets/avatars/avatar-penjani-inyene.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554670800000,
-      },
-      {
-        id: '5e887d0b3d090c1b8f162003',
-        image: '/assets/avatars/avatar-omar-darboe.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554670800000,
-      },
-      {
-        id: '5e88792be2d4cfb4bf0971d9',
-        image: '/assets/avatars/avatar-siegbert-gottfried.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554757200000,
-      },
-      {
-        id: '5e8877da9a65442b11551975',
-        image: '/assets/avatars/avatar-iulia-albu.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554757200000,
-      },
-      {
-        id: '5e8680e60cba5019c5ca6fda',
-        image: '/assets/avatars/avatar-nasimiyu-danai.png',
-        name: 'Fran Perez',
-        collection: 'Phone',
-        stock: 10,
-        price: 10.2,
-        createdAt: 1554757200000,
-      }
-    ];
+      []
+    );
+
 
     const columns = [
       { 
@@ -154,56 +67,63 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
       { field: 'collection', headerName: 'Collection', flex: 1, sortable: true, align: 'center', headerAlign: 'center' },
       { field: 'stock', headerName: 'Stock', flex: 1, sortable: true, align: 'right', headerAlign: 'right' },
       { field: 'price', headerName: 'Price', flex: 1, sortable: true, align: 'right', headerAlign: 'right' },
-      { 
-        field: 'createdAt', 
-        headerName: 'Created At', 
-        flex: 1, 
-        sortable: true, 
-        align: 'right', 
-        headerAlign: 'right',
-        renderCell: (params) => {
-        let createdAt = format(params.row.createdAt, 'dd/MM/yyyy');
-        return (
-            <Typography variant="subtitle2">
-                {createdAt}
-            </Typography>
-        );
-        },
-      },   
+      { field: 'discount', headerName: 'Discount', flex: 1, sortable: true, align: 'right', headerAlign: 'right' },
+      
     ];
   
-    const [sortModel, setSortModel] = useState([
-      {
-        field: 'createdAt',
-        sort: 'desc',
-      },
-    ]);
 
-    const handleSortModelChange = (newSortModel) => {
-      setSortModel(newSortModel);
-    };
-
-    const rows = items.map((item) => {
+    const rows = products.map((item) => {
       return {
-        id: item.id,
+        id: item._id,
         name: item.name,
-        image: item.image,
-        collection: item.collection,
+        image: `data:${item.images[0].contentType};base64,${item.images[0].data}`,
+        collection: item.category_id.name,
         stock: item.stock,
         price: item.price,
-        createdAt: item.createdAt,
+        discount: item.discount,
       };
     });
 
-    const [selectedDate, handleDateChange] = useState(new Date());
+    const [selectedRows, setSelectedRows] = useState([]);
+
+
+    const handleStartDateChange = (e) => {
+      const value = e.target.value;
+      setStartDate(value);
+    };
+  
+    const handleEndDateChange = (e) => {
+      const value = e.target.value;
+      setEndDate(value);
+    };
 
     const handleSubmit = useCallback(
       (event) => {
         event.preventDefault();
+        try {
+          const newPromotion = {
+            name: values.name,
+            description: values.description,
+            discount: values.discount,
+            start_date: startDate,
+            end_date: endDate,
+            products: selectedRows.map(p => p.id),
+          };
+          console.log(startDate)
+          console.log(endDate)
+          console.log(newPromotion)
+          createPromotion(newPromotion).then((res) => {
+            onSubmit(res.data);
+          });
+          onSuccess();
+        } catch (e) {
+          console.log('Error creating promotion:', e);
+        }
       },
-      []
+      [values, onSuccess]
     );
   
+
  
     return (
       <form
@@ -231,8 +151,9 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
                     fullWidth
                     label="Name"
                     name="name"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
+                    value={values.name}
                   />
                 </Grid>
                 
@@ -244,9 +165,10 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
                     fullWidth
                     label="Description"
                     name="description"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
                     multiline
+                    value={values.description}
                   />
   
                 </Grid>
@@ -259,9 +181,10 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
                     fullWidth
                     label="Discount (%)"
                     name="discount"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
                     type="number"
+                    value={values.discount}
                   />
   
                 </Grid>
@@ -274,7 +197,8 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
                     fullWidth
                     label="Start Date"
                     name="startDate"
-                    // onChange={handleChange}
+                    value={startDate}
+                    onChange={handleStartDateChange}
                     required
                     type="datetime-local"
                     InputLabelProps={{
@@ -292,7 +216,8 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
                     fullWidth
                     label="End Date (%)"
                     name="endDate"
-                    // onChange={handleChange}
+                    value={endDate}
+                    onChange={handleEndDateChange}
                     required
                     type="datetime-local"
                     InputLabelProps={{
@@ -317,22 +242,6 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
                       direction="row"
                       spacing={2}
                     >
-                      <OutlinedInput
-                          defaultValue=""
-                          fullWidth
-                          placeholder="Search product"
-                          startAdornment={(
-                            <InputAdornment position="start">
-                              <SvgIcon
-                                color="action"
-                                fontSize="small"
-                              >
-                                <MagnifyingGlassIcon />
-                              </SvgIcon>
-                            </InputAdornment>
-                          )}
-                          sx={{ maxWidth: 500 }}
-                        />
                     </Stack>
                     
                   </Stack>
@@ -340,17 +249,39 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
                   <div style={{ width: '100%'}}>
                   <DataGrid 
                     autoHeight 
+                    checkboxSelection
+                    onRowSelectionModelChange={(ids) => {
+                      const selectedIDs = new Set(ids);
+                      const selectedRows = rows.filter((row) =>
+                        selectedIDs.has(row.id),
+                      );
+            
+                      setSelectedRows(selectedRows);
+                    }}
                     rows={rows} 
                     columns={columns}
-                    checkboxSelection
-                    sortModel={sortModel}
-                    onSortModelChange={handleSortModelChange}
                     initialState={{
                       pagination: {paginationModel: {pageSize: 10}},
+                      filter: {
+                        filterModel: {
+                          items: [],
+                          
+                        },
+                      },
+                    }}
+                    slotProps={{
+                      toolbar: {
+                        showQuickFilter: true,
+                        quickFilterProps: { debounceMs: 500 },
+                      },
                     }}
                     getRowHeight={() => 'auto'} 
                     pageSizeOptions={[10, 25, 50]} />
                   </div>
+
+                  {/* <pre style={{ fontSize: 10 }}>
+                    {JSON.stringify(selectedRows, null, 4)}
+                  </pre> */}
                                   
                 </Grid>
               </Grid>
@@ -362,7 +293,7 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
           </CardContent>
           <Divider />
           <CardActions sx={{ justifyContent: 'flex-end' }} style={{ justifyContent: 'center' }}>
-            <Button variant="contained">
+            <Button variant="contained" type='submit'>
               Add Promotion
             </Button>
           </CardActions>
@@ -371,5 +302,8 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
     );
   };
   
+  CreatePromotion.propTypes = {
+    Product: PropTypes.object,
+  };
   export default CreatePromotion;
   

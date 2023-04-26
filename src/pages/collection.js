@@ -1,4 +1,3 @@
-import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
 import XMarkIcon from '@heroicons/react/24/solid/XMarkIcon';
 import { MoreVert } from '@mui/icons-material';
@@ -10,20 +9,23 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, IconButton, InputAdornment, Menu,
-  MenuItem, OutlinedInput, Stack,
+  DialogTitle, IconButton,
+  Menu,
+  MenuItem,
+  Stack,
   styled,
   SvgIcon,
-  Typography,
+  Typography
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Head from 'next/head';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getAllCategories } from 'src/api/apiService';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import CreateCollection from 'src/sections/collection/collection-create';
 import UpdateCollection from 'src/sections/collection/collection-update';
-import { format } from 'date-fns';
+
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -66,72 +68,23 @@ BootstrapDialogTitle.propTypes = {
 };
 
 
-const items = [
-  {
-    id: '5e887ac47eed253091be10cb',
-    name: 'Carson Darrin',
-    description: 'Clothes',
-    createdAt: 1555016400000,
-  },
-  {
-    id: '5e887b209c28ac3dd97f6db5',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1555016400000,
-  },
-  {
-    id: '5e887b7602bdbc4dbb234b27',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554930000000,
-  },
-  {
-    id: '5e86809283e28b96d2d38537',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554757200000,
-  },
-  {
-    id: '5e86805e2bafd54f66cc95c3',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554670800000,
-  },
-  {
-    id: '5e887a1fbefd7938eea9c981',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554670800000,
-  },
-  {
-    id: '5e887d0b3d090c1b8f162003',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554670800000,
-  },
-  {
-    id: '5e88792be2d4cfb4bf0971d9',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554757200000,
-  },
-  {
-    id: '5e8877da9a65442b11551975',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554757200000,
-  },
-  {
-    id: '5e8680e60cba5019c5ca6fda',
-    name: 'Fran Perez',
-    description: 'Phone',
-    createdAt: 1554757200000,
-  }
-];
-
-
 const Page = () => {
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [selectedEditCollection, setSelectedEditCollection] = useState(null);
+  const [selectedDeleteCollection, setSelectedDeleteCollection] = useState(null);
+  const [collections, setCollections] = useState([]);
+
+
+  useEffect(() => {
+    getAllCategories().then((res) =>{
+      setCollections(res.data);
+    })
+    .catch(error => {
+      console.error("Error getting category:", error);
+    });
+  }, []);
 
   const handleAddClick = () => {
     setOpen(true);
@@ -141,10 +94,6 @@ const Page = () => {
     setOpen(false);
   };
 
-  const [openDelete, setOpenDelete] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openView, setOpenView] = useState(false);
-
   const handleDeleteClose = () => {
     setOpenDelete(false);
   };
@@ -153,15 +102,43 @@ const Page = () => {
     setOpenEdit(false);
   };
 
-  const handleViewClose = () => {
-    setOpenView(false);
+  const handleCreateNewCategory = (values) => {
+    collections.push(values);
+    setCollections([...collections]);
+  };
+
+  const handleUpdateCategory = (values) => {
+      setCollections(prevCollections => {
+        const index = prevCollections.findIndex(category => category._id === values._id);
+        const updatedCollections = [...prevCollections];
+        updatedCollections[index] = {
+          ...updatedCollections[index],
+          name: values.name,
+          description: values.description
+        };
+        return updatedCollections;
+  })
+  };
+
+
+  function formatDateTimeDislay(inputString) {
+    // Convert input string to JavaScript Date object
+    var date = new Date(inputString);
+  
+    // Extract individual components (year, month, day, hours, minutes, seconds) from the Date object
+    var year = date.getFullYear();
+    var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed, so we add 1 and pad with leading zero
+    var day = ("0" + date.getDate()).slice(-2); // Pad with leading zero
+    var hours = ("0" + date.getHours()).slice(-2); // Pad with leading zero
+    var minutes = ("0" + date.getMinutes()).slice(-2); // Pad with leading zero
+    var seconds = ("0" + date.getSeconds()).slice(-2); // Pad with leading zero
+  
+    // Format the date and time components into a user-friendly string
+    var formattedDateTime = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+  
+    // Return the formatted date and time string
+    return formattedDateTime;
   }
-
-  const [selectedEditCollection, setSelectedEditCollection] = useState(null);
-
-  const [selectedDeleteCollection, setSelectedDeleteCollection] = useState(null);
-
-  const [selectedCollection, setSelectedCollection] = useState(null);
 
   const columns = [
     { field: 'name', headerName: 'Name', flex: 1, sortable: true, align: 'center', headerAlign: 'center' },
@@ -174,7 +151,7 @@ const Page = () => {
       align: 'right', 
       headerAlign: 'right',
       renderCell: (params) => {
-      let createdAt = format(params.row.createdAt, 'dd/MM/yyyy');
+        let createdAt = formatDateTimeDislay(params.row.createdAt);
       return (
           <Typography variant="subtitle2">
               {createdAt}
@@ -256,9 +233,9 @@ const Page = () => {
     setSortModel(newSortModel);
   };
 
-const rows = items.map((item) => {
+const rows = collections.map((item) => {
     return {
-      id: item.id,
+      id: item._id,
       name: item.name,
       description: item.description,
       createdAt: item.createdAt,
@@ -273,6 +250,7 @@ const rows = items.map((item) => {
           Collection Management
         </title>
       </Head>
+      
       <Box
         component="main"
         sx={{
@@ -307,22 +285,7 @@ const rows = items.map((item) => {
                   direction="row"
                   spacing={1}
                 >
-                  <OutlinedInput
-                      defaultValue=""
-                      fullWidth
-                      placeholder="Search Collection"
-                      startAdornment={(
-                        <InputAdornment position="start">
-                          <SvgIcon
-                            color="action"
-                            fontSize="small"
-                          >
-                            <MagnifyingGlassIcon />
-                          </SvgIcon>
-                        </InputAdornment>
-                      )}
-                      sx={{ maxWidth: 500 }}
-                    />
+                  
                 </Stack>
                 <Stack
                   alignItems="center"
@@ -344,6 +307,8 @@ const rows = items.map((item) => {
               </Stack>
             </Card>
 
+
+
             {/* Collection Table start */}
             <Card>
               <div style={{ width: '100%'}}>
@@ -358,6 +323,18 @@ const rows = items.map((item) => {
                 disableDensitySelector
                 initialState={{
                   pagination: {paginationModel: {pageSize: 10}},
+                  filter: {
+                    filterModel: {
+                      items: [],
+                      
+                    },
+                  },
+                }}
+                slotProps={{
+                  toolbar: {
+                    showQuickFilter: true,
+                    quickFilterProps: { debounceMs: 500 },
+                  },
                 }}
                 getRowHeight={() => 'auto'} 
                 pageSizeOptions={[10, 25, 50]} />
@@ -366,6 +343,8 @@ const rows = items.map((item) => {
             {/* Collection Table end */}
           </Stack>
 
+
+
           {/* Create Collection Dialog start */}
           <div>
             <BootstrapDialog
@@ -373,16 +352,14 @@ const rows = items.map((item) => {
               aria-labelledby="customized-dialog-title"
               open={open}
             >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                Add New Collection
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
-                <CreateCollection />
-              {/* </DialogContent> */}
-            
+                <CreateCollection 
+                onSuccess={() => handleClose()} 
+                onSubmit={handleCreateNewCategory}/>
             </BootstrapDialog>
           </div>
           {/* Create Collection Dialog end */}
+
+
 
           {/* Edit Collection Dialog start */}
           <div>
@@ -391,17 +368,16 @@ const rows = items.map((item) => {
               aria-labelledby="customized-dialog-title"
               open={openEdit}
             >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleEditClose}>
-                Update Collection
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
                 <UpdateCollection 
                  Collection={selectedEditCollection}
+                 onSuccess={() => handleEditClose()} 
+                 onSubmit={handleUpdateCategory}
                 />
-              {/* </DialogContent> */}
             </BootstrapDialog>
           </div>
           {/* Edit Collection Dialog end */}
+
+
 
           {/* Delete Dialog start */}
           <div>

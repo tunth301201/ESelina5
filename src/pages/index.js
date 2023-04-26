@@ -35,76 +35,56 @@ const Page = () => (
           <Grid
             xs={12}
             sm={6}
-            lg={3}
+            lg={4}
           >
             <OverviewBudget
-              difference={12}
+              difference={10}
               positive
               sx={{ height: '100%' }}
-              value="$24k"
+              value="$2500"
             />
           </Grid>
           <Grid
             xs={12}
             sm={6}
-            lg={3}
+            lg={4}
           >
             <OverviewTotalCustomers
-              difference={16}
+              difference={12}
               positive={false}
               sx={{ height: '100%' }}
-              value="1.6k"
+              value="120"
             />
           </Grid>
           <Grid
             xs={12}
             sm={6}
-            lg={3}
-          >
-            <OverviewTasksProgress
-              sx={{ height: '100%' }}
-              value={75.5}
-            />
-          </Grid>
-          <Grid
-            xs={12}
-            sm={6}
-            lg={3}
+            lg={4}
           >
             <OverviewTotalProfit
               sx={{ height: '100%' }}
-              value="$15k"
+              value="$500"
             />
           </Grid>
           <Grid
             xs={12}
-            lg={8}
+            lg={12}
           >
             <OverviewSales
               chartSeries={[
                 {
-                  name: 'This year',
-                  data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20]
+                  name: 'This month',
+                  data: [10, 3, 2, 4, 6, 12, 14, 12, 15, 17, 18, 20]
                 },
                 {
-                  name: 'Last year',
-                  data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13]
+                  name: 'Last month',
+                  data: [12, 9, 5, 2, 1, 7, 6, 9, 13, 15, 12, 10]
                 }
               ]}
               sx={{ height: '100%' }}
             />
           </Grid>
-          <Grid
-            xs={12}
-            md={6}
-            lg={4}
-          >
-            <OverviewTraffic
-              chartSeries={[63, 15, 22]}
-              labels={['Desktop', 'Tablet', 'Phone']}
-              sx={{ height: '100%' }}
-            />
-          </Grid>
+      
           <Grid
             xs={12}
             md={6}
@@ -115,31 +95,31 @@ const Page = () => (
                 {
                   id: '5ece2c077e39da27658aa8a9',
                   image: '/assets/products/product-1.png',
-                  name: 'Healthcare Erbology',
-                  updatedAt: subHours(now, 6).getTime()
+                  name: 'Gentle Cleansing Foam',
+                  updatedAt: subHours(now, 3).getTime()
                 },
                 {
                   id: '5ece2c0d16f70bff2cf86cd8',
                   image: '/assets/products/product-2.png',
-                  name: 'Makeup Lancome Rouge',
-                  updatedAt: subDays(subHours(now, 8), 2).getTime()
+                  name: 'Night Cream',
+                  updatedAt: subDays(subHours(now, 2), 2).getTime()
                 },
                 {
                   id: 'b393ce1b09c1254c3a92c827',
                   image: '/assets/products/product-5.png',
-                  name: 'Skincare Soja CO',
+                  name: 'Acne Spot Treatment',
                   updatedAt: subDays(subHours(now, 1), 1).getTime()
                 },
                 {
                   id: 'a6ede15670da63f49f752c89',
                   image: '/assets/products/product-6.png',
-                  name: 'Makeup Lipstick',
+                  name: 'Lip Scrub',
                   updatedAt: subDays(subHours(now, 3), 3).getTime()
                 },
                 {
                   id: 'bcad5524fe3a2f8f8620ceda',
                   image: '/assets/products/product-7.png',
-                  name: 'Healthcare Ritual',
+                  name: 'Hydrating Face Oil',
                   updatedAt: subDays(subHours(now, 5), 6).getTime()
                 }
               ]}
@@ -155,62 +135,62 @@ const Page = () => (
               orders={[
                 {
                   id: 'f69f88012978187a6c12897f',
-                  ref: 'DEV1049',
-                  amount: 30.5,
+                  ref: 'ADHR1234',
+                  amount: 120,
                   customer: {
-                    name: 'Ekaterina Tankova'
+                    name: 'Sophia Johnson'
                   },
-                  createdAt: 1555016400000,
-                  status: 'pending'
+                  createdAt: "21/04/2023 18:00:28",
+                  status: 'waiting'
                 },
                 {
                   id: '9eaa1c7dd4433f413c308ce2',
-                  ref: 'DEV1048',
-                  amount: 25.1,
+                  ref: 'DEVH1983',
+                  amount: 250,
                   customer: {
-                    name: 'Cao Yu'
+                    name: 'Noah Harris'
                   },
-                  createdAt: 1555016400000,
+                  createdAt: "21/04/2023 17:54:48",
                   status: 'delivered'
                 },
                 {
                   id: '01a5230c811bd04996ce7c13',
-                  ref: 'DEV1047',
-                  amount: 10.99,
+                  ref: 'HDGN1736',
+                  amount: 109,
                   customer: {
-                    name: 'Alexa Richardson'
+                    name: 'Mia Lee'
                   },
-                  createdAt: 1554930000000,
-                  status: 'refunded'
+                  createdAt: "21/04/2023 17:39:46",
+                  status: 'return'
                 },
                 {
                   id: '1f4e1bd0a87cea23cdb83d18',
-                  ref: 'DEV1046',
-                  amount: 96.43,
+                  ref: 'DEVS1046',
+                  amount: 95,
                   customer: {
-                    name: 'Anje Keizer'
+                    name: 'Liam Brown'
                   },
-                  createdAt: 1554757200000,
-                  status: 'pending'
+                  createdAt: "21/04/2023 17:23:42",
+                  status: 'waiting'
                 },
                 {
                   id: '9f974f239d29ede969367103',
-                  ref: 'DEV1045',
-                  amount: 32.54,
+                  ref: 'HDJD1045',
+                  amount: 320,
                   customer: {
-                    name: 'Clarke Gillebert'
+                    name: 'Ava Thompson'
                   },
-                  createdAt: 1554670800000,
+                  createdAt: "21/04/2023 17:18:58",
                   status: 'delivered'
                 },
                 {
                   id: 'ffc83c1560ec2f66a1c05596',
-                  ref: 'DEV1044',
-                  amount: 16.76,
+                  ref: 'IDNS1044',
+                  amount: 168,
                   customer: {
-                    name: 'Adam Denisov'
+                    name: 'Ethan Martinez'
                   },
-                  createdAt: 1554670800000,
+                  createdAt: "21/04/2023 17:17:58",
                   status: 'delivered'
                 }
               ]}

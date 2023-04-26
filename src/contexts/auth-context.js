@@ -1,31 +1,33 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
+import axios from 'axios';
 
 const HANDLERS = {
   INITIALIZE: 'INITIALIZE',
   SIGN_IN: 'SIGN_IN',
-  SIGN_OUT: 'SIGN_OUT'
+  SIGN_UP: 'SIGN_UP',
+  SIGN_OUT: 'SIGN_OUT',
 };
 
 const initialState = {
   isAuthenticated: false,
   isLoading: true,
-  user: null
+  token: null
 };
 
 const handlers = {
   [HANDLERS.INITIALIZE]: (state, action) => {
-    const user = action.payload;
+    const token = action.token;
 
     return {
       ...state,
       ...(
         // if payload (user) is provided, then is authenticated
-        user
+        token
           ? ({
             isAuthenticated: true,
             isLoading: false,
-            user
+            token
           })
           : ({
             isLoading: false
@@ -34,21 +36,30 @@ const handlers = {
     };
   },
   [HANDLERS.SIGN_IN]: (state, action) => {
-    const user = action.payload;
+    const token = action.token;
 
     return {
       ...state,
       isAuthenticated: true,
-      user
+      token
     };
   },
   [HANDLERS.SIGN_OUT]: (state) => {
     return {
       ...state,
       isAuthenticated: false,
-      user: null
+      token: null
     };
-  }
+  },
+  [HANDLERS.SIGN_UP]: (state, action) => {
+    const token = action.token;
+
+    return {
+      ...state,
+      isAuthenticated: true,
+      token
+    };
+  },
 };
 
 const reducer = (state, action) => (
@@ -75,22 +86,17 @@ export const AuthProvider = (props) => {
     let isAuthenticated = false;
 
     try {
-      isAuthenticated = window.sessionStorage.getItem('authenticated') === 'true';
+      isAuthenticated = localStorage.getItem('authenticated') === 'true';
     } catch (err) {
       console.error(err);
     }
 
     if (isAuthenticated) {
-      const user = {
-        id: '5e86809283e28b96d2d38537',
-        avatar: '/assets/avatars/avatar-anika-visser.png',
-        name: 'Anika Visser',
-        email: 'anika.visser@devias.io'
-      };
+      const token = JSON.parse(localStorage.getItem('token'));
 
       dispatch({
         type: HANDLERS.INITIALIZE,
-        payload: user
+        token: token
       });
     } else {
       dispatch({
@@ -107,55 +113,77 @@ export const AuthProvider = (props) => {
     []
   );
 
-  const skip = () => {
-    try {
-      window.sessionStorage.setItem('authenticated', 'true');
-    } catch (err) {
-      console.error(err);
-    }
-
-    const user = {
-      id: '5e86809283e28b96d2d38537',
-      avatar: '/assets/avatars/avatar-anika-visser.png',
-      name: 'Anika Visser',
-      email: 'anika.visser@devias.io'
-    };
-
-    dispatch({
-      type: HANDLERS.SIGN_IN,
-      payload: user
-    });
-  };
 
   const signIn = async (email, password) => {
-    if (email !== 'demo@devias.io' || password !== 'Password123!') {
-      throw new Error('Please check your email and password');
+    var loginDto = {
+      email: email,
+      password: password
+    };
+
+    let token="";
+    try {
+      const response = await axios.post('http://localhost:4000/auth/login', loginDto);
+      token = response.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
     }
 
     try {
-      window.sessionStorage.setItem('authenticated', 'true');
+      localStorage.setItem('authenticated', 'true');
+      localStorage.setItem('token', JSON.stringify(token));
     } catch (err) {
       console.error(err);
     }
 
-    const user = {
-      id: '5e86809283e28b96d2d38537',
-      avatar: '/assets/avatars/avatar-anika-visser.png',
-      name: 'Anika Visser',
-      email: 'anika.visser@devias.io'
-    };
-
     dispatch({
       type: HANDLERS.SIGN_IN,
-      payload: user
+      token: token
     });
   };
 
-  const signUp = async (email, name, password) => {
-    throw new Error('Sign up is not implemented');
+  const signUp = async (email, password, firstname, lastname, gender, birthday, phone, address) => {
+    var registerDto = {
+      email: email,
+      password: password,
+      firstname: firstname,
+      lastname: lastname,
+      gender: gender,
+      birthday: birthday,
+      phone: phone,
+      address: address,
+      role: "customer",
+    };
+
+    let token="";
+    try {
+      const response = await axios.post('http://localhost:4000/auth/register', registerDto);
+      token = response.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
+
+    try {
+      localStorage.setItem('authenticated', 'true');
+      localStorage.setItem('token', JSON.stringify(token));
+    } catch (err) {
+      console.error(err);
+    }
+
+    dispatch({
+      type: HANDLERS.SIGN_UP,
+      token: token
+    });
   };
 
   const signOut = () => {
+    try {
+      localStorage.removeItem("authenticated");
+      localStorage.removeItem("token");
+    } catch (err) {
+      console.error(err);
+    }
+
+    
     dispatch({
       type: HANDLERS.SIGN_OUT
     });
@@ -165,7 +193,6 @@ export const AuthProvider = (props) => {
     <AuthContext.Provider
       value={{
         ...state,
-        skip,
         signIn,
         signUp,
         signOut

@@ -82,7 +82,7 @@ import {
                     name="collection"
                     // onChange={handleChange}
                     required
-                    value={product.collection}
+                    value={product.category_id.name}
                     InputProps={{
                         readOnly: true
                       }}
@@ -94,9 +94,34 @@ import {
                   xs={12}
                   md={12}
                 >
+                
                     <label htmlFor="upload-file">
                         <img
-                        src={product.image}
+                        src={`data:${product.images[0].contentType};base64,${product.images[0].data}`}
+                        alt={product.name}
+                        style={{ width: 80, height: 80, marginRight: 10 }}
+                        />
+                    </label>
+
+                    <label htmlFor="upload-file">
+                        <img
+                        src={`data:${product.images[1].contentType};base64,${product.images[1].data}`}
+                        alt={product.name}
+                        style={{ width: 80, height: 80, marginRight: 10 }}
+                        />
+                    </label>
+
+                    <label htmlFor="upload-file">
+                        <img
+                        src={`data:${product.images[2].contentType};base64,${product.images[2].data}`}
+                        alt={product.name}
+                        style={{ width: 80, height: 80, marginRight: 10 }}
+                        />
+                    </label>
+
+                    <label htmlFor="upload-file">
+                        <img
+                        src={`data:${product.images[3].contentType};base64,${product.images[3].data}`}
                         alt={product.name}
                         style={{ width: 80, height: 80, marginRight: 10 }}
                         />
@@ -113,6 +138,7 @@ import {
                     // onChange={handleChange}
                     required
                     multiline
+                    value={product.description}
                     InputProps={{
                         readOnly: true
                       }}
@@ -121,7 +147,7 @@ import {
                 </Grid>
                 <Grid
                   xs={12}
-                  md={6}
+                  md={4}
                 >
                   <TextField
                     fullWidth
@@ -138,7 +164,7 @@ import {
                 </Grid>
                 <Grid
                   xs={12}
-                  md={6}
+                  md={4}
                 >
                   <TextField
                     fullWidth
@@ -148,6 +174,24 @@ import {
                     required
                     type="number"
                     defaultValue={product.price}
+                    InputProps={{
+                        readOnly: true
+                      }}
+                  />
+                </Grid>
+
+                <Grid
+                  xs={12}
+                  md={4}
+                >
+                  <TextField
+                    fullWidth
+                    label="Discount"
+                    name="discount"
+                    // onChange={handleChange}
+                    required
+                    type="number"
+                    defaultValue={product.discount}
                     InputProps={{
                         readOnly: true
                       }}

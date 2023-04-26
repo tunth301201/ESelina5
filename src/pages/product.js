@@ -19,12 +19,13 @@ import {
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Head from 'next/head';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import CreateProduct from 'src/sections/product/product-create';
 import UpdateProduct from 'src/sections/product/product-update';
 import ViewProduct from 'src/sections/product/product-view';
 import { format } from 'date-fns';
+import { getAllProducts, getAllCategories, getOneProduct  } from 'src/api/apiService';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -67,102 +68,33 @@ BootstrapDialogTitle.propTypes = {
 };
 
 
-const items = [
-  {
-    id: '5e887ac47eed253091be10cb',
-    image: '/assets/avatars/avatar-carson-darrin.png',
-    name: 'Carson Darrin',
-    collection: 'Clothes',
-    stock: 5,
-    price: 12.5,
-    createdAt: 1555016400000,
-  },
-  {
-    id: '5e887b209c28ac3dd97f6db5',
-    image: '/assets/avatars/avatar-fran-perez.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1555016400000,
-  },
-  {
-    id: '5e887b7602bdbc4dbb234b27',
-    image: '/assets/avatars/avatar-jie-yan-song.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554930000000,
-  },
-  {
-    id: '5e86809283e28b96d2d38537',
-    image: '/assets/avatars/avatar-anika-visser.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554757200000,
-  },
-  {
-    id: '5e86805e2bafd54f66cc95c3',
-    image: '/assets/avatars/avatar-miron-vitold.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554670800000,
-  },
-  {
-    id: '5e887a1fbefd7938eea9c981',
-    image: '/assets/avatars/avatar-penjani-inyene.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554670800000,
-  },
-  {
-    id: '5e887d0b3d090c1b8f162003',
-    image: '/assets/avatars/avatar-omar-darboe.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554670800000,
-  },
-  {
-    id: '5e88792be2d4cfb4bf0971d9',
-    image: '/assets/avatars/avatar-siegbert-gottfried.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554757200000,
-  },
-  {
-    id: '5e8877da9a65442b11551975',
-    image: '/assets/avatars/avatar-iulia-albu.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554757200000,
-  },
-  {
-    id: '5e8680e60cba5019c5ca6fda',
-    image: '/assets/avatars/avatar-nasimiyu-danai.png',
-    name: 'Fran Perez',
-    collection: 'Phone',
-    stock: 10,
-    price: 10.2,
-    createdAt: 1554757200000,
-  }
-];
-
-
 const Page = () => {
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openView, setOpenView] = useState(false);
+  const [selectedEditProduct, setSelectedEditProduct] = useState(null);
+  const [selectedDeleteProduct, setSelectedDeleteProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [collections, setCollections] = useState([]);
+
+ 
+  
+ 
+
+
+  useEffect(() => {
+    getAllProducts().then((res) =>{
+      setProducts(res.data);
+      getAllCategories().then((res) =>{
+        setCollections(res.data);
+      })
+    })
+    .catch(error => {
+      console.error("Error getting category:", error);
+    });
+  }, []);
 
   const handleAddClick = () => {
     setOpen(true);
@@ -171,10 +103,6 @@ const Page = () => {
   const handleClose = () => {
     setOpen(false);
   };
-
-  const [openDelete, setOpenDelete] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openView, setOpenView] = useState(false);
 
   const handleDeleteClose = () => {
     setOpenDelete(false);
@@ -188,11 +116,25 @@ const Page = () => {
     setOpenView(false);
   }
 
-  const [selectedEditProduct, setSelectedEditProduct] = useState(null);
+  function formatDateTimeDislay(inputString) {
+    // Convert input string to JavaScript Date object
+    var date = new Date(inputString);
+  
+    // Extract individual components (year, month, day, hours, minutes, seconds) from the Date object
+    var year = date.getFullYear();
+    var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed, so we add 1 and pad with leading zero
+    var day = ("0" + date.getDate()).slice(-2); // Pad with leading zero
+    var hours = ("0" + date.getHours()).slice(-2); // Pad with leading zero
+    var minutes = ("0" + date.getMinutes()).slice(-2); // Pad with leading zero
+    var seconds = ("0" + date.getSeconds()).slice(-2); // Pad with leading zero
+  
+    // Format the date and time components into a user-friendly string
+    var formattedDateTime = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+  
+    // Return the formatted date and time string
+    return formattedDateTime;
+  }
 
-  const [selectedDeleteProduct, setSelectedDeleteProduct] = useState(null);
-
-  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const columns = [
     { 
@@ -219,6 +161,7 @@ const Page = () => {
     { field: 'collection', headerName: 'Collection', flex: 1, sortable: true, align: 'center', headerAlign: 'center' },
     { field: 'stock', headerName: 'Stock', flex: 1, sortable: true, align: 'right', headerAlign: 'right' },
     { field: 'price', headerName: 'Price', flex: 1, sortable: true, align: 'right', headerAlign: 'right' },
+    { field: 'discount', headerName: 'Discount', flex: 1, sortable: true, align: 'right', headerAlign: 'right' },
     { 
       field: 'createdAt', 
       headerName: 'Created At', 
@@ -227,7 +170,7 @@ const Page = () => {
       align: 'right', 
       headerAlign: 'right',
       renderCell: (params) => {
-      let createdAt = format(params.row.createdAt, 'dd/MM/yyyy');
+        let createdAt = formatDateTimeDislay(params.row.createdAt);
       return (
           <Typography variant="subtitle2">
               {createdAt}
@@ -252,29 +195,18 @@ const Page = () => {
         const handleMenuClose = () => {
           setAnchorEl(null);
         };
-        const handleViewClick = () => {
-          const viewProduct = {
-            id: params.row.id,
-            name: params.row.name,
-            image: params.row.image,
-            collection: params.row.collection,
-            stock: params.row.stock,
-            price: params.row.price
-          };
-          setSelectedProduct(viewProduct);
+        const handleViewClick = async () => {
+          await getOneProduct(params.row.id).then((res) => {
+            setSelectedProduct(res.data);
+          })
+          
           setOpenView(true);
           handleMenuClose();
         };
-        const handleEditClick = () => {
-          const editProduct = {
-            id: params.row.id,
-            name: params.row.name,
-            image: params.row.image,
-            collection: params.row.collection,
-            stock: params.row.stock,
-            price: params.row.price
-          };
-          setSelectedEditProduct(editProduct);
+        const handleEditClick = async () => {
+          await getOneProduct(params.row.id).then((res) => {
+            setSelectedEditProduct(res.data);
+          })
           setOpenEdit(true);
           handleMenuClose();
         };
@@ -282,10 +214,6 @@ const Page = () => {
           const deleteProduct = {
             id: params.row.id,
             name: params.row.name,
-            image: params.row.image,
-            collection: params.row.collection,
-            stock: params.row.stock,
-            price: params.row.price
           };
           setSelectedDeleteProduct(deleteProduct);
           setOpenDelete(true);
@@ -329,17 +257,40 @@ const Page = () => {
     setSortModel(newSortModel);
   };
 
-const rows = items.map((item) => {
+const rows = products.map((item) => {
+ 
     return {
-      id: item.id,
+      id: item._id,
       name: item.name,
-      image: item.image,
-      collection: item.collection,
+      image: `data:${item.images[0].contentType};base64,${item.images[0].data}`,
+      collection: item.category_id.name,
       stock: item.stock,
       price: item.price,
+      discount: item.discount,
       createdAt: item.createdAt,
     };
   });
+
+  const handleCreateNewProduct = (values) => {
+    products.push(values);
+    setProducts([...products]);
+  };
+
+  const handleUpdateProduct = (values) => {
+    setProducts(prevProducts => {
+      const index = prevProducts.findIndex(product => product._id === values._id);
+      const updatedProducts = [...prevProducts];
+      updatedProducts[index] = {
+        ...updatedProducts[index],
+        name: values.name,
+        collection: values.collection,
+        stock: values.stock,
+        price: values.price,
+        discount: values.discount,
+      };
+      return updatedProducts;
+})
+};
 
 
   return (
@@ -383,22 +334,6 @@ const rows = items.map((item) => {
                   direction="row"
                   spacing={1}
                 >
-                  <OutlinedInput
-                      defaultValue=""
-                      fullWidth
-                      placeholder="Search product"
-                      startAdornment={(
-                        <InputAdornment position="start">
-                          <SvgIcon
-                            color="action"
-                            fontSize="small"
-                          >
-                            <MagnifyingGlassIcon />
-                          </SvgIcon>
-                        </InputAdornment>
-                      )}
-                      sx={{ maxWidth: 500 }}
-                    />
                 </Stack>
                 <Stack
                   alignItems="center"
@@ -434,6 +369,18 @@ const rows = items.map((item) => {
                 disableDensitySelector
                 initialState={{
                   pagination: {paginationModel: {pageSize: 10}},
+                  filter: {
+                    filterModel: {
+                      items: [],
+                      
+                    },
+                  },
+                }}
+                slotProps={{
+                  toolbar: {
+                    showQuickFilter: true,
+                    quickFilterProps: { debounceMs: 500 },
+                  },
                 }}
                 getRowHeight={() => 'auto'} 
                 pageSizeOptions={[10, 25, 50]} />
@@ -442,6 +389,8 @@ const rows = items.map((item) => {
             {/* Product Table end */}
           </Stack>
 
+
+
           {/* Create Product Dialog start */}
           <div>
             <BootstrapDialog
@@ -449,16 +398,17 @@ const rows = items.map((item) => {
               aria-labelledby="customized-dialog-title"
               open={open}
             >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                Add New Product
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
-                <CreateProduct />
-              {/* </DialogContent> */}
+                <CreateProduct 
+                onSuccess={() => handleClose()} 
+                onSubmit={handleCreateNewProduct}
+                Collection={collections}
+                />
             
             </BootstrapDialog>
           </div>
           {/* Create Product Dialog end */}
+
+
 
           {/* Edit Product Dialog start */}
           <div>
@@ -467,14 +417,12 @@ const rows = items.map((item) => {
               aria-labelledby="customized-dialog-title"
               open={openEdit}
             >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleEditClose}>
-                Update Product
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
                 <UpdateProduct 
-                 product={selectedEditProduct}
+                onSuccess={() => handleEditClose()} 
+                onSubmit={handleUpdateProduct}
+                 Product={selectedEditProduct}
+                 Collection={collections}
                 />
-              {/* </DialogContent> */}
             </BootstrapDialog>
           </div>
           {/* Edit Product Dialog end */}

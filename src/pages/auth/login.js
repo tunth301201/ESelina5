@@ -1,23 +1,19 @@
-import { useCallback, useState } from 'react';
-import Head from 'next/head';
-import NextLink from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import {
-  Alert,
   Box,
   Button,
-  FormHelperText,
   Link,
   Stack,
-  Tab,
-  Tabs,
   TextField,
   Typography
 } from '@mui/material';
+import { useFormik } from 'formik';
+import Head from 'next/head';
+import NextLink from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import { useAuth } from 'src/hooks/use-auth';
 import { Layout as AuthLayout } from 'src/layouts/auth/layout';
+import * as Yup from 'yup';
 
 const Page = () => {
   const router = useRouter();
@@ -25,9 +21,9 @@ const Page = () => {
   const [method, setMethod] = useState('email');
   const formik = useFormik({
     initialValues: {
-      email: 'demo@devias.io',
-      password: 'Password123!',
-      submit: null
+      email: 'tunth301201@gmail.com',
+      password: '12345678',
+      submit: null,
     },
     validationSchema: Yup.object({
       email: Yup
@@ -59,13 +55,6 @@ const Page = () => {
     []
   );
 
-  const handleSkip = useCallback(
-    () => {
-      auth.skip();
-      router.push('/');
-    },
-    [auth, router]
-  );
 
   return (
     <>
@@ -163,15 +152,8 @@ const Page = () => {
                 >
                   Continue
                 </Button>
-                <Button
-                  fullWidth
-                  size="large"
-                  sx={{ mt: 3 }}
-                  onClick={handleSkip}
-                >
-                  Skip authentication
-                </Button>
-                <Alert
+                
+                {/* <Alert
                   color="primary"
                   severity="info"
                   sx={{ mt: 3 }}
@@ -179,7 +161,7 @@ const Page = () => {
                   <div>
                     You can use <b>demo@devias.io</b> and password <b>Password123!</b>
                   </div>
-                </Alert>
+                </Alert> */}
               </form>
            
             

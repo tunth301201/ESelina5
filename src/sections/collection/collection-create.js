@@ -7,34 +7,48 @@ import {
     Divider,
     CardActions
   } from '@mui/material';
-  import { useCallback, useRef } from 'react';
+  import { useCallback, useRef, useState } from 'react';
+import { createCategory } from 'src/api/apiService';
   
   
-  const CreateCollection = () => {
-    // const [values, setValues] = useState({
-    //   firstName: 'Anika',
-    //   lastName: 'Visser',
-    //   email: 'demo@devias.io',
-    //   phone: '',
-    //   state: 'los-angeles',
-    //   country: 'USA'
-    // });
+  const CreateCollection = ({ onSuccess, onSubmit }) => {
+    const [values, setValues] = useState({
+      name: "",
+      description: ""
+    });
   
-    // const handleChange = useCallback(
-    //   (event) => {
-    //     setValues((prevState) => ({
-    //       ...prevState,
-    //       [event.target.name]: event.target.value
-    //     }));
-    //   },
-    //   []
-    // );
+    const handleChange = useCallback(
+      (event) => {
+        setValues((prevState) => ({
+          ...prevState,
+          [event.target.name]: event.target.value
+        }));
+      }, 
+      []
+    );
+
+    
   
     const handleSubmit = useCallback(
       (event) => {
         event.preventDefault();
+
+        try {
+          const newCategory = {
+            name: values.name,
+            description: values.description
+          }
+          createCategory(newCategory).then((res) => {
+            onSubmit(res.data);
+          });
+          
+          onSuccess(); 
+          
+        } catch (error) {
+          console.log('Error creating category:', error);
+        }
       },
-      []
+      [values.name, values.description, onSuccess]
     );
   
  
@@ -63,8 +77,9 @@ import {
                     fullWidth
                     label="Name"
                     name="name"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
+                    value={values.name}
                   />
                 </Grid>
                 
@@ -76,9 +91,10 @@ import {
                     fullWidth
                     label="Description"
                     name="description"
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     required
                     multiline
+                    value={values.description}
                   />
   
                 </Grid>
@@ -89,7 +105,7 @@ import {
           </CardContent>
           <Divider />
           <CardActions sx={{ justifyContent: 'flex-end' }} style={{ justifyContent: 'center' }}>
-            <Button variant="contained">
+            <Button variant="contained" type='submit'>
               Add Collection
             </Button>
           </CardActions>
