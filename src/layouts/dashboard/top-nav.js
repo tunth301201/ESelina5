@@ -1,29 +1,69 @@
-import PropTypes from 'prop-types';
-import BellIcon from '@heroicons/react/24/solid/BellIcon';
-import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
 import Bars3Icon from '@heroicons/react/24/solid/Bars3Icon';
+import BellIcon from '@heroicons/react/24/solid/BellIcon';
 import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
+import ShoppingBagIcon from '@heroicons/react/24/solid/ShoppingBagIcon';
 import {
   Avatar,
   Badge,
   Box,
-  IconButton,
-  Stack,
+  IconButton, InputAdornment, OutlinedInput, Stack,
   SvgIcon,
   Tooltip,
-  useMediaQuery
+  Button
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import PropTypes from 'prop-types';
 import { usePopover } from 'src/hooks/use-popover';
 import { AccountPopover } from './account-popover';
+import FireIcon from '@heroicons/react/24/solid/FireIcon';
+import TrophyIcon from '@heroicons/react/24/solid/TrophyIcon';
+import SparklesIcon from '@heroicons/react/24/solid/SparklesIcon';
+import { useEffect, useState } from 'react';
+import { getAllCategories, getCartByUserId } from 'src/api/apiServices';
+import {selinashoplogo} from '../../components/selinashoplogo.png'
+import HomeIcon from '@heroicons/react/24/solid/HomeIcon';
+import TagIcon from '@heroicons/react/24/solid/TagIcon';
+import ShoppingCartIcon from '@heroicons/react/24/solid/ShoppingCartIcon';
+import UserIcon from '@heroicons/react/24/solid/UserIcon';
 
-const SIDE_NAV_WIDTH = 280;
+
 const TOP_NAV_HEIGHT = 64;
 
 export const TopNav = (props) => {
   const { onNavOpen } = props;
-  const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   const accountPopover = usePopover();
+  const [carts, setCarts] = useState([]);
+  const [noOfCarts, setNoOfCarts] = useState(0);
+
+  const updateCart = () => {
+    getCartByUserId().then((res) => {
+      setCarts(res.data);
+      const { cart_items } = res.data;
+      setNoOfCarts(cart_items.length);
+    });
+  };
+  
+  useEffect(() => {
+    updateCart();
+  }, []);
+
+  const handleViewCart = () => {
+    window.location.href = `/cart`;
+  }
+
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    getAllCategories().then((res) => {
+      setCategories(res.data);
+    })
+  })
+
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]?._id);
+
+  const handleSelectChange = (event) => {
+    setSelectedCategory(event.target.value);
+  };
+ 
 
   return (
     <>
@@ -33,71 +73,62 @@ export const TopNav = (props) => {
           backdropFilter: 'blur(6px)',
           backgroundColor: (theme) => alpha(theme.palette.background.default, 0.8),
           position: 'sticky',
-          left: {
-            lg: `${SIDE_NAV_WIDTH}px`
-          },
           top: 0,
-          width: {
-            lg: `calc(100% - ${SIDE_NAV_WIDTH}px)`
-          },
-          zIndex: (theme) => theme.zIndex.appBar
         }}
       >
-        <Stack
-          alignItems="center"
-          direction="row"
-          justifyContent="space-between"
-          spacing={2}
-          sx={{
-            minHeight: TOP_NAV_HEIGHT,
-            px: 2
-          }}
-        >
-          <Stack
-            alignItems="center"
-            direction="row"
-            spacing={2}
-          >
-            {!lgUp && (
-              <IconButton onClick={onNavOpen}>
-                <SvgIcon fontSize="small">
-                  <Bars3Icon />
-                </SvgIcon>
-              </IconButton>
-            )}
-            {/* <Tooltip title="Search">
-              <IconButton>
-                <SvgIcon fontSize="small">
-                  <MagnifyingGlassIcon />
-                </SvgIcon>
-              </IconButton>
-            </Tooltip> */}
-          </Stack>
-          <Stack
-            alignItems="center"
-            direction="row"
-            spacing={2}
-          >
-            {/* <Tooltip title="Contacts">
-              <IconButton>
-                <SvgIcon fontSize="small">
-                  <UsersIcon />
-                </SvgIcon>
-              </IconButton>
-            </Tooltip> */}
-            <Tooltip title="Notifications">
-              <IconButton>
+       
+
+       
+{/* Nav1 */}
+<header class="bg-white">
+  <div class="container mx-auto px-4 py-8 flex items-center">
+
+    <div class="mr-auto md:w-48 flex-shrink-0 center" onClick={onNavOpen}>
+      <img class="" src="/assets/selinashoplogo.png" alt="" width="100px"/>
+    </div>
+
+    <div class="w-full max-w-xs xl:max-w-lg 2xl:max-w-2xl bg-gray-100 rounded-md hidden xl:flex items-center">
+      <select  onChange={handleSelectChange} value={selectedCategory} class="bg-transparent uppercase font-bold text-sm p-4 mr-4" name="" id="">
+        
+        {categories?.map((option) => (
+                    <option
+                      key={option._id}
+                      value={option._id}
+                    >
+                      {option.name}
+                    </option>
+                  ))}
+      </select>
+      <input class="border-l border-gray-300 bg-transparent font-semibold text-sm pl-4" type="text" placeholder="I'm searching for ..." />
+      <svg class="ml-auto h-5 px-4 text-gray-500 svg-inline--fa fa-search fa-w-16 fa-9x" aria-hidden="true" focusable="false" data-prefix="far" data-icon="search" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M508.5 468.9L387.1 347.5c-2.3-2.3-5.3-3.5-8.5-3.5h-13.2c31.5-36.5 50.6-84 50.6-136C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c52 0 99.5-19.1 136-50.6v13.2c0 3.2 1.3 6.2 3.5 8.5l121.4 121.4c4.7 4.7 12.3 4.7 17 0l22.6-22.6c4.7-4.7 4.7-12.3 0-17zM208 368c-88.4 0-160-71.6-160-160S119.6 48 208 48s160 71.6 160 160-71.6 160-160 160z"></path></svg>
+    </div>
+
+
+    <div class="ml-auto md:w-48 hidden sm:flex flex-col place-items-end">
+      <span class="font-bold md:text-xl">+84 352 997 187</span>
+      <span class="font-semibold text-sm text-gray-400">Support 24/7</span>
+    </div>
+
+ 
+    <nav class="contents">
+      <ul class="ml-4 xl:w-48 flex items-center justify-end">
+        <li class="ml-2 lg:ml-4 relative inline-block">
+        <Tooltip title="Cart">
+              <IconButton onClick={handleViewCart.bind(null)}>
                 <Badge
-                  badgeContent={4}
+                  badgeContent={noOfCarts}
                   color="success"
-                  variant="dot"
                 >
-                  <SvgIcon fontSize="small">
-                    <BellIcon />
+                  <SvgIcon fontSize="medium">
+                    <ShoppingBagIcon />
                   </SvgIcon>
                 </Badge>
               </IconButton>
             </Tooltip>
+        </li>
+        <li class="ml-2 lg:ml-4 relative inline-block">
+        
+
             <Avatar
               onClick={accountPopover.handleOpen}
               ref={accountPopover.anchorRef}
@@ -106,10 +137,53 @@ export const TopNav = (props) => {
                 height: 40,
                 width: 40
               }}
-              src="/assets/avatars/avatar-anika-visser.png"
+              src="/assets/avatars/avatar-neha-punita.png"
             />
-          </Stack>
-        </Stack>
+        </li>
+      </ul>
+    </nav>
+
+
+  </div>
+  <hr/>
+</header>
+
+
+
+{/* Nav2 */}
+<header class="header sticky top-0 bg-white shadow-md flex items-center justify-between px-0 py-0">
+
+    <h1 class="w-3/12">
+        
+    </h1>
+
+
+    <nav class="nav font-semibold text-lg">
+        <ul class="flex items-center">
+            <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer active">
+              <a href='/'> <SvgIcon><HomeIcon/></SvgIcon> Home</a>
+            </li>
+            <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer">
+              <a href='/promotion'> <SvgIcon><FireIcon/></SvgIcon> Promotion</a>            
+              </li>
+            <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer">
+              <a href='/collection'> <SvgIcon><TagIcon/></SvgIcon> Collection</a>
+            </li>
+            <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer">
+              <a href='/order'> <SvgIcon><ShoppingBagIcon/></SvgIcon> Order</a>
+            </li>
+        </ul>
+    </nav>
+
+   
+    <div class="w-3/12 flex justify-end">
+        
+    </div>
+</header>
+ 
+
+
+
       </Box>
       <AccountPopover
         anchorEl={accountPopover.anchorRef.current}

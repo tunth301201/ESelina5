@@ -1,335 +1,64 @@
-import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
-import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
-import XMarkIcon from '@heroicons/react/24/solid/XMarkIcon';
-import { MoreVert } from '@mui/icons-material';
 import {
   Box,
-  Button,
   Card,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle, IconButton, InputAdornment, Menu,
-  MenuItem, OutlinedInput, Stack,
-  styled,
-  SvgIcon,
-  Typography,
+  Unstable_Grid2 as Grid,
+  Pagination
 } from '@mui/material';
-import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Head from 'next/head';
-import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { addProductToCart, getAllProducts, getProductsByTag } from 'src/api/apiServices';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import CreatePromotion from 'src/sections/promotion/promotion-create';
-import UpdatePromotion from 'src/sections/promotion/promotion-update';
-// import ViewPromotion from 'src/sections/promotion/promotion-view';
-import { format } from 'date-fns';
 
-const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2),
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1),
-  },
-}));
-
-function BootstrapDialogTitle(props) {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
-          }}
-        >
-          <SvgIcon fontSize="small">
-            <XMarkIcon />
-          </SvgIcon>
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-}
-
-BootstrapDialogTitle.propTypes = {
-  children: PropTypes.node,
-  onClose: PropTypes.func.isRequired,
-};
-
-
-const items = [
-  {
-    id: '5e887ac47eed253091be10cb',
-    name: 'Carson Darrin',
-    description: 'Clothes',
-    discount: 5,
-    startDate: 1555016400000,
-    endDate: 1555016400000,
-  },
-  {
-    id: '5e887b209c28ac3dd97f6db5',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1555016400000,
-    endDate: 1555016400000,
-  },
-  {
-    id: '5e887b7602bdbc4dbb234b27',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554930000000,
-  },
-  {
-    id: '5e86809283e28b96d2d38537',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554757200000,
-  },
-  {
-    id: '5e86805e2bafd54f66cc95c3',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554670800000,
-  },
-  {
-    id: '5e887a1fbefd7938eea9c981',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554670800000,
-  },
-  {
-    id: '5e887d0b3d090c1b8f162003',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554670800000,
-  },
-  {
-    id: '5e88792be2d4cfb4bf0971d9',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554757200000,
-  },
-  {
-    id: '5e8877da9a65442b11551975',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554757200000,
-  },
-  {
-    id: '5e8680e60cba5019c5ca6fda',
-    name: 'Fran Perez',
-    description: 'Phone',
-    discount: 10,
-    startDate: 1554930000000,
-    endDate: 1554757200000,
-  }
-];
 
 
 const Page = () => {
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { tag } = router.query;
+  const tagId = tag ? tag : null;
+  const [productsByTag, setProductsByTag] = useState([]);
+  
+  useEffect(() => {
+    if (tagId) {
+      getProductsByTag(tagId).then((res) => {
+        setProductsByTag(res.data);
+      })
+    }
+    else {
+      getAllProducts().then((res) => {
+        setProductsByTag(res.data);
+      })
+    }
+   
+  }, []);
 
-  const handleAddClick = () => {
-    setOpen(true);
+
+  const [page, setPage] = useState(1);
+  const numPages = Math.ceil(productsByTag.length/50);
+  const handleChangePage = (event, value) => {
+    setPage(value);
   };
+  const startIndex = (page -1)*50;
+  const displayedProducts = productsByTag.slice(startIndex, startIndex + 50);
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleAddToCart = (productId, quantity) => {
+    const addCartItem = {
+      product_id: productId,
+      quantity: quantity
+    }
+    addProductToCart(addCartItem).then((res) => {
+    })
   };
-
-  const [openDelete, setOpenDelete] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openView, setOpenView] = useState(false);
-
-  const handleDeleteClose = () => {
-    setOpenDelete(false);
-  };
-
-  const handleEditClose = () => {
-    setOpenEdit(false);
-  };
-
-  const handleViewClose = () => {
-    setOpenView(false);
+  const handleViewProduct = (productId) => {
+    window.location.href = `/view-product?product=${productId}`;
   }
 
-  const [selectedEditPromotion, setSelectedEditPromotion] = useState(null);
-
-  const [selectedDeletePromotion, setSelectedDeletePromotion] = useState(null);
-
-  const [selectedPromotion, setSelectedPromotion] = useState(null);
-
-  const columns = [
-    { field: 'name', headerName: 'Name', flex: 1, sortable: true, align: 'left', headerAlign: 'center' },
-    { field: 'description', headerName: 'Description', flex: 1, sortable: true, align: 'center', headerAlign: 'center' },
-    { field: 'discount', headerName: 'Discount', flex: 1, sortable: true, align: 'right', headerAlign: 'right' },
-    { 
-        field: 'startDate', 
-        headerName: 'Start Date', 
-        flex: 1, 
-        sortable: true, 
-        align: 'right', 
-        headerAlign: 'right',
-        renderCell: (params) => {
-        let startDate = format(params.row.startDate, 'dd/MM/yyyy');
-        return (
-            <Typography variant="subtitle2">
-                {startDate}
-            </Typography>
-        );
-        },
-      },     { 
-      field: 'endDate', 
-      headerName: 'End Date', 
-      flex: 1, 
-      sortable: true, 
-      align: 'right', 
-      headerAlign: 'right',
-      renderCell: (params) => {
-      let endDate = format(params.row.endDate, 'dd/MM/yyyy');
-      return (
-          <Typography variant="subtitle2">
-              {endDate}
-          </Typography>
-      );
-      },
-    },    
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      flex: 1,
-      sortable: false,
-      align: 'center',
-      headerAlign: 'center',
-      marginRight: 10,
-      disableColumnMenu: true,
-      renderCell: (params) => {
-        const [anchorEl, setAnchorEl] = useState(null);
-        const handleMenuOpen = (event) => {
-          setAnchorEl(event.currentTarget);
-        };
-        const handleMenuClose = () => {
-          setAnchorEl(null);
-        };
-        const handleViewClick = () => {
-          const viewPromotion = {
-            id: params.row.id,
-            name: params.row.name,
-            description: params.row.description,
-            discount: params.row.discount,
-            startDate: params.row.startDate,
-            endDate: params.row.endDate,
-          };
-          setSelectedPromotion(viewPromotion);
-          setOpenView(true);
-          handleMenuClose();
-        };
-        const handleEditClick = () => {
-          const editPromotion = {
-            id: params.row.id,
-            name: params.row.name,
-            description: params.row.description,
-            discount: params.row.discount,
-            startDate: params.row.startDate,
-            endDate: params.row.endDate,
-          };
-          setSelectedEditPromotion(editPromotion);
-          setOpenEdit(true);
-          handleMenuClose();
-        };
-        const handleDeleteClick = () => {
-          const deletePromotion = {
-            id: params.row.id,
-            name: params.row.name,
-            description: params.row.description,
-            discount: params.row.discount,
-            startDate: params.row.startDate,
-            endDate: params.row.endDate,
-          };
-          setSelectedDeletePromotion(deletePromotion);
-          setOpenDelete(true);
-          handleMenuClose();
-        };
-        return (
-          <div>
-            <IconButton
-              aria-controls={`actions-menu-${params.id}`}
-              aria-haspopup="true"
-              aria-label="Actions"
-              onClick={handleMenuOpen}
-            >
-              <MoreVert />
-            </IconButton>
-            <Menu
-              id={`actions-menu-${params.id}`}
-              anchorEl={anchorEl}
-              keepMounted
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              <MenuItem onClick={handleViewClick}>View</MenuItem>
-              <MenuItem onClick={handleEditClick}>Edit</MenuItem>
-              <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
-            </Menu>
-          </div>
-        );
-      },
-    },
-  ];
-
-  const [sortModel, setSortModel] = useState([
-    {
-      field: 'startDate',
-      sort: 'desc',
-    },
-  ]);
-
-  const handleSortModelChange = (newSortModel) => {
-    setSortModel(newSortModel);
-  };
-
-const rows = items.map((item) => {
-    return {
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      discount: item.discount,
-      startDate: item.startDate,
-      endDate: item.endDate,
-    };
-  });
-
-
   return (
-    <>
+    <> 
       <Head>
         <title>
-          Promotion Management
+          Promotion
         </title>
       </Head>
       <Box
@@ -340,163 +69,58 @@ const rows = items.map((item) => {
         }}
       >
         <Container maxWidth="xl">
-          <Stack spacing={3}>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              spacing={4}
-            >
-              <Stack spacing={1}>
-                <Typography variant="h4">
-                  Promotion Management
-                </Typography>
-              </Stack>
-            </Stack>
-            
-            <Card>
-              <Stack
-                alignItems="center"
-                direction="row"
-                justifyContent="space-between"
-                spacing={2}
-                sx={{ p: 2 }}
-              >
-                <Stack
-                  alignItems="center"
-                  direction="row"
-                  spacing={1}
-                >
-                  <OutlinedInput
-                      defaultValue=""
-                      fullWidth
-                      placeholder="Search Promotion"
-                      startAdornment={(
-                        <InputAdornment position="start">
-                          <SvgIcon
-                            color="action"
-                            fontSize="small"
-                          >
-                            <MagnifyingGlassIcon />
-                          </SvgIcon>
-                        </InputAdornment>
-                      )}
-                      sx={{ maxWidth: 500 }}
-                    />
-                </Stack>
-                <Stack
-                  alignItems="center"
-                  direction="row"
-                  spacing={1}
-                >
-                  <Button
-                      startIcon={(
-                        <SvgIcon fontSize="small">
-                          <PlusIcon />
-                        </SvgIcon>
-                      )}
-                      variant="contained"
-                      onClick={handleAddClick}
-                    >
-                      Add
-                    </Button>
-                </Stack>
-              </Stack>
-            </Card>
+          <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+            {displayedProducts?.map((product) => (
+              <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
+                <Card>
+                  <div>
+                  <div class="max-w-md w-full bg-white-900 shadow-lg rounded-xl p-3">
+                    <div class="relative h-62 w-full mb-3">
+                      <img src={`data:${product.images[0].contentType};base64,${product.images[0].data}`} alt="product" class=" w-full h-[250px] object-cover rounded-2xl" />
+                    </div>
 
-            {/* Promotion Table start */}
-            <Card>
-              <div style={{ width: '100%'}}>
-              <DataGrid 
-                autoHeight 
-                rows={rows} 
-                columns={columns}
-                sortModel={sortModel}
-                onSortModelChange={handleSortModelChange}
-                slots={{ toolbar: GridToolbar }}
-                disableColumnSelector
-                disableDensitySelector
-                initialState={{
-                  pagination: {paginationModel: {pageSize: 10}},
-                }}
-                getRowHeight={() => 'auto'} 
-                pageSizeOptions={[10, 25, 50]} />
-              </div>
-            </Card>
-            {/* Promotion Table end */}
-          </Stack>
-
-          {/* Create Promotion Dialog start */}
-          <div>
-            <BootstrapDialog
-              onClose={handleClose}
-              aria-labelledby="customized-dialog-title"
-              open={open}
-              maxWidth="lg"
-            >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                Add New Promotion
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
-                <CreatePromotion />
-              {/* </DialogContent> */}
-            
-            </BootstrapDialog>
-          </div>
-          {/* Create Promotion Dialog end */}
-
-          {/* Edit Promotion Dialog start */}
-          <div>
-            <BootstrapDialog
-              onClose={handleEditClose}
-              aria-labelledby="customized-dialog-title"
-              open={openEdit}
-              maxWidth="lg"
-            >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleEditClose}>
-                Update Promotion
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
-                <UpdatePromotion 
-                 Promotion={selectedEditPromotion}
-                />
-              {/* </DialogContent> */}
-            </BootstrapDialog>
-          </div>
-          {/* Edit Promotion Dialog end */}
-
-          {/* View Promotion Dialog start */}
-          <div>
-            <BootstrapDialog
-                onClose={handleViewClose}
-                aria-labelledby="customized-dialog-title"
-                open={openView}
-              >
-                {/* <ViewPromotion 
-                 Promotion={selectedPromotion}
-                /> */}
-              </BootstrapDialog>
-          </div>
-          {/* View Promotion Dialod end */}
-
-          {/* Delete Dialog start */}
-          <div>
-            <BootstrapDialog
-                onClose={handleDeleteClose}
-                aria-labelledby="customized-dialog-title"
-                open={openDelete}
-              >
-                <DialogContent dividers>
-                  Are you sure to delete {selectedDeletePromotion ? `${selectedDeletePromotion.name}` : 'this Promotion'}?
-                </DialogContent>
-                <DialogActions style={{ justifyContent: 'center' }}>
-                  <Button onClick={handleDeleteClose}>No</Button>
-                  <Button autoFocus onClick={handleDeleteClose} variant="contained">
-                    Yes
-                  </Button>
-                </DialogActions>
-              </BootstrapDialog>
-          </div>
-          {/* Delete Dialog end */}
+                    <div class="flex-auto justify-evenly">
+                      <div class="flex flex-wrap ">
+                        <div class="w-full flex-none text-sm flex items-center text-gray-600">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                        </div>
+                        <div class="flex items-center w-full justify-between min-w-0 ">
+                          <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
+                          <div class="flex items-center bg-green-400 text-white text-xs px-2 py-1 ml-3 rounded-lg">
+                            INSTOCK</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center">
+                      <span class="text-x text-gray-500 font-semibold mt-1 ml-2 mr-1"><del class="text-gray-500">${product.price}</del></span>
+                        <div class="text-xl text-red-500 font-semibold mt-1">${product.discount}</div>
+                      </div>
+                      
+                      <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
+                        <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
+                          <span>Add Cart</span>
+                          
+                        </button>
+                        <button onClick={handleViewProduct.bind(null, product._id)} class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    </div>
+                  </div>
+                  </Card>
+            </Grid>
+            ))}
+          </Grid>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+          <Pagination count={numPages} page={page} onChange={handleChangePage} variant="outlined" color="secondary" size='small' />
+          </Box>
         </Container>
       </Box>
     </>

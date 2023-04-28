@@ -13,10 +13,15 @@ export const AccountPopover = (props) => {
     () => {
       onClose?.();
       auth.signOut();
+      localStorage.removeItem('token');
       router.push('/auth/login');
     },
     [onClose, auth, router]
   );
+
+  const handleViewAccount = () => {
+    window.location.href = '/account';
+  }
 
   return (
     <Popover
@@ -34,6 +39,7 @@ export const AccountPopover = (props) => {
           py: 1.5,
           px: 2
         }}
+        onClick={handleViewAccount.bind(null)}
       >
         <Typography variant="overline">
           Account

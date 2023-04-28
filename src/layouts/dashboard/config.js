@@ -7,50 +7,18 @@ import UserPlusIcon from '@heroicons/react/24/solid/UserPlusIcon';
 import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
 import XCircleIcon from '@heroicons/react/24/solid/XCircleIcon';
 import { SvgIcon } from '@mui/material';
+import HomeIcon from '@heroicons/react/24/solid/HomeIcon';
+import TagIcon from '@heroicons/react/24/solid/TagIcon';
+import ShoppingCartIcon from '@heroicons/react/24/solid/ShoppingCartIcon';
+import FireIcon from '@heroicons/react/24/solid/FireIcon';
 
 export const items = [
   {
-    title: 'Dashboard',
+    title: 'Home',
     path: '/',
     icon: (
       <SvgIcon fontSize="small">
-        <ChartBarIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Product',
-    path: '/product',
-    icon: (
-      <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Collection',
-    path: '/collection',
-    icon: (
-      <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Order',
-    path: '/order',
-    icon: (
-      <SvgIcon fontSize="small">
-        <UsersIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'User',
-    path: '/user',
-    icon: (
-      <SvgIcon fontSize="small">
-        <UsersIcon />
+        <HomeIcon />
       </SvgIcon>
     )
   },
@@ -59,13 +27,31 @@ export const items = [
     path: '/promotion',
     icon: (
       <SvgIcon fontSize="small">
-        <UsersIcon />
+        <FireIcon />
       </SvgIcon>
     )
   },
   {
-    title: 'Companies',
-    path: '/companies',
+    title: 'Collection',
+    path: '/collection',
+    icon: (
+      <SvgIcon fontSize="small">
+        <TagIcon />
+      </SvgIcon>
+    )
+  },
+  {
+    title: 'Cart',
+    path: '/cart',
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingCartIcon />
+      </SvgIcon>
+    )
+  },
+  {
+    title: 'Order',
+    path: '/order',
     icon: (
       <SvgIcon fontSize="small">
         <ShoppingBagIcon />
@@ -80,41 +66,73 @@ export const items = [
         <UserIcon />
       </SvgIcon>
     )
-  },
-  {
-    title: 'Settings',
-    path: '/settings',
-    icon: (
-      <SvgIcon fontSize="small">
-        <CogIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Login',
-    path: '/auth/login',
-    icon: (
-      <SvgIcon fontSize="small">
-        <LockClosedIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Register',
-    path: '/auth/register',
-    icon: (
-      <SvgIcon fontSize="small">
-        <UserPlusIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Error',
-    path: '/404',
-    icon: (
-      <SvgIcon fontSize="small">
-        <XCircleIcon />
-      </SvgIcon>
-    )
   }
+
+
+
+
+
+  // {
+  //   title: 'Product',
+  //   path: '/product',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <ShoppingBagIcon />
+  //     </SvgIcon>
+  //   )
+  // },
+  // {
+  //   title: 'View Product',
+  //   path: '/view-product',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <ShoppingBagIcon />
+  //     </SvgIcon>
+  //   )
+  // },
+  // {
+  //   title: 'User',
+  //   path: '/user',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <UsersIcon />
+  //     </SvgIcon>
+  //   )
+  // },
+  // {
+  //   title: 'Companies',
+  //   path: '/companies',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <ShoppingBagIcon />
+  //     </SvgIcon>
+  //   )
+  // },
+  // {
+  //   title: 'Login',
+  //   path: '/auth/login',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <LockClosedIcon />
+  //     </SvgIcon>
+  //   )
+  // },
+  // {
+  //   title: 'Register',
+  //   path: '/auth/register',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <UserPlusIcon />
+  //     </SvgIcon>
+  //   )
+  // },
+  // {
+  //   title: 'Error',
+  //   path: '/404',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <XCircleIcon />
+  //     </SvgIcon>
+  //   )
+  // }
 ];

@@ -20,12 +20,15 @@ import {
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Head from 'next/head';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import CreateUser from 'src/sections/user/user-create';
 import UpdateUser from 'src/sections/user/user-update';
 import ViewUser from 'src/sections/user/user-view';
 import { format } from 'date-fns';
+import axios from 'axios';
+import { useJwt } from 'react-jwt';
+import getAllUsers from 'src/api/apiServices';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -172,7 +175,42 @@ const items = [
 ];
 
 
+  
+
 const Page = () => {
+  
+  
+//   const [users, setUsers] = useState([]);
+//   const { decodedToken, isTokenExpired } = useJwt(localStorage.getItem('token'));
+// console.log("decodedToken: "+ decodedToken)
+
+//   if (isTokenExpired) {
+//     // Token hết hạn
+//     // Điều hướng người dùng đến trang đăng nhập hoặc cập nhật token mới
+//     window.location.href = '/auth/login';
+//   }
+
+//   if (decodedToken.role !== 'seller') {
+//     // Người dùng không có vai trò 'seller'
+//     // Hiển thị thông báo lỗi hoặc từ chối truy cập vào trang
+//     window.location.href = '/auth/login';
+//   }
+
+//   useEffect(() => {
+//     axios.get("http://localhost:4000/user").then((response) => {
+//       setProducts(response.data);
+//     });
+//   }, []);
+const [users, setUsers] = useState([]);
+
+useEffect(() => {
+  getAllUsers().then(res => {
+    setUsers(res.data);
+  });
+}, []);
+
+console.log("all users: "+ users)
+  
   const [open, setOpen] = useState(false);
 
   const handleAddClick = () => {
@@ -215,16 +253,16 @@ const Page = () => {
       minWidth: 300,
       renderCell: (params) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar
-          src={params.row.avatar}
-          alt={params.row.firstname}
-          style={{ width: 40, height: 40, marginRight: 10 }}
-        />
-        
-        <Typography variant="subtitle2">
-          {params.row.firstname} {params.row.lastname}
-        </Typography>
-      </div>
+          <Avatar
+            src={params.row.avatar}
+            alt={params.row.firstname}
+            style={{ width: 40, height: 40, marginRight: 10 }}
+          />
+          
+          <Typography variant="subtitle2">
+            {params.row.firstname} {params.row.lastname}
+          </Typography>
+        </div>
       ),
     },
     { field: 'email', headerName: 'Email', flex: 1, sortable: true, align: 'left', headerAlign: 'left' },
@@ -238,7 +276,8 @@ const Page = () => {
       align: 'right', 
       headerAlign: 'right',
       renderCell: (params) => {
-      let createdAt = format(params.row.createdAt, 'dd/MM/yyyy');
+      // let createdAt = format(params.row.createdAt, 'dd/MM/yyyy');
+      let createdAt = format(new Date(params.row.createdAt), 'dd/MM/yyyy HH:mm:ss');
       return (
           <Typography variant="subtitle2">
               {createdAt}
@@ -340,14 +379,14 @@ const Page = () => {
     setSortModel(newSortModel);
   };
 
-const rows = items.map((item) => {
+const rows = users.map((item) => {
     return {
-      id: item.id,
+      id: item._id,
       firstname: item.firstname,
       lastname: item.lastname,
-      avatar: item.avatar,
+      avatar: '/assets/avatars/avatar-carson-darrin.png',
       email: item.email,
-      noOfOrders: item.noOfOrders,
+      noOfOrders: 0,
       role: item.role,
       createdAt: item.createdAt,
     };

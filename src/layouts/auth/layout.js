@@ -49,7 +49,7 @@ export const Layout = (props) => {
                 width: 32
               }}
             >
-              <Logo />
+             
             </Box>
           </Box>
           {children}
@@ -85,7 +85,7 @@ export const Layout = (props) => {
                 sx={{ color: '#15B79E' }}
                 target="_blank"
               >
-                Devias Kit
+                SelinaShop
               </Box>
             </Typography>
             <Typography
@@ -93,11 +93,11 @@ export const Layout = (props) => {
               sx={{ mb: 3 }}
               variant="subtitle1"
             >
-              A professional kit that comes with ready-to-use MUI components.
+              Whatever you've got in mind. We've got inside.
             </Typography>
             <img
               alt=""
-              src="/assets/auth-illustration.svg"
+              src="/assets/selinashoplogodarknobg.png"
             />
           </Box>
         </Grid>

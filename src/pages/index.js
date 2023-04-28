@@ -1,25 +1,92 @@
+import ArrowDownOnSquareIcon from '@heroicons/react/24/solid/ArrowDownOnSquareIcon';
+import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Divider,
+  Unstable_Grid2 as Grid,
+  Stack,
+  SvgIcon,
+  Typography
+} from '@mui/material';
 import Head from 'next/head';
-import { subDays, subHours } from 'date-fns';
-import { Box, Container, Unstable_Grid2 as Grid } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import { OverviewBudget } from 'src/sections/overview/overview-budget';
-import { OverviewLatestOrders } from 'src/sections/overview/overview-latest-orders';
-import { OverviewLatestProducts } from 'src/sections/overview/overview-latest-products';
-import { OverviewSales } from 'src/sections/overview/overview-sales';
-import { OverviewTasksProgress } from 'src/sections/overview/overview-tasks-progress';
-import { OverviewTotalCustomers } from 'src/sections/overview/overview-total-customers';
-import { OverviewTotalProfit } from 'src/sections/overview/overview-total-profit';
-import { OverviewTraffic } from 'src/sections/overview/overview-traffic';
+import ShoppingBagIcon from '@heroicons/react/24/solid/ShoppingBagIcon';
+import { Carousel } from "react-responsive-carousel";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
+import { addProductToCart, getAllCategories, getAllProducts, getCartByUserId } from 'src/api/apiServices';
+
+
+
 
 const now = new Date();
 
-const Page = () => (
+
+const Page = () => {
+
+
+  const items = [
+    {
+      src: "https://img.freepik.com/premium-vector/luxury-banner-cosmetic-ads-exquisite-container-with-purple-satin-bokeh-background_68094-175.jpg?w=2000",
+      alt: "banner1",
+    },
+    {
+      src: "https://st4.depositphotos.com/1561359/22205/v/600/depositphotos_222053720-stock-illustration-floral-skincare-banner-ads-petals.jpg",
+      alt: "banner2",
+    },
+    {
+      src: "https://watermark.lovepik.com/photo/40012/6005.jpg_wh1200.jpg",
+      alt: "banner3",
+    },
+  ];
+
+  const [products, setProducts] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [collections, setCollections] = useState([]);
+  useEffect(() => {
+    getAllProducts().then((res) => {
+      setProducts(res.data);
+      getCartByUserId().then((res) => {
+        const { cart_items } = res.data;
+        setCartCount(cart_items.length);
+      })
+      getAllCategories().then((res) => {
+        setCollections(res.data);
+        // console.log(res.data);
+      })
+    })
+  }, []);
+
+  
+ 
+
+  const handleViewProduct = (productId) => {
+    window.location.href = `/view-product?product=${productId}`;
+  }
+
+  
+  const handleAddToCart = (productId, quantity) => {
+    const addCartItem = {
+      product_id: productId,
+      quantity: quantity
+    }
+    addProductToCart(addCartItem).then((res) => {
+    })
+  };
+
+  return (
   <>
     <Head>
       <title>
-        Overview | Devias Kit
+        Home | SelinaShop
       </title>
     </Head>
+
     <Box
       component="main"
       sx={{
@@ -30,198 +97,737 @@ const Page = () => (
       <Container maxWidth="xl">
         <Grid
           container
-          spacing={3}
+          spacing={1}
         >
           <Grid
-            xs={12}
-            sm={6}
-            lg={3}
+          xs={12}
+          lg={12}
           >
-            <OverviewBudget
-              difference={12}
-              positive
-              sx={{ height: '100%' }}
-              value="$24k"
-            />
+          {/* display slider */}
+          <Carousel autoPlay infiniteLoop showThumbs={false} interval={3000}>
+            {items.map((item, index) => (
+              <div key={index}  width="100px" height="300px">
+                <img src={item.src} alt={item.alt} w-full />
+              </div>
+            ))}
+          </Carousel>
+
           </Grid>
+
+      
+
+        {/* Display categories in here */}
+
           <Grid
             xs={12}
             sm={6}
             lg={3}
           >
-            <OverviewTotalCustomers
-              difference={16}
-              positive={false}
-              sx={{ height: '100%' }}
-              value="1.6k"
-            />
+             <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%'
+                }}
+              >
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      pb: 1
+                    }}
+                  >
+                    <Avatar
+                      src='https://i.pinimg.com/originals/28/87/99/2887999c4d837ed4a068e50046b97891.png'
+                      variant="square"
+                    />
+                  </Box>
+                  <Typography
+                    align="center"
+                    gutterBottom
+                    variant="h5"
+                  >
+                    {collections[0]?.name}
+                  </Typography>
+                  <Typography
+                    align="center"
+                    variant="body1"
+                  >
+                    {collections[0]?.description}
+                  </Typography>
+                </CardContent>
+                <Box sx={{ flexGrow: 1 }} />
+                <Divider />
+                <Stack
+                  alignItems="center"
+                  direction="row"
+                  justifyContent="space-between"
+                  spacing={2}
+                  sx={{ p: 2 }}
+                >
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ShoppingBagIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      125 purchases
+                    </Typography>
+                  </Stack>
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ArrowDownOnSquareIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      35 products
+                    </Typography>
+                  </Stack>
+                </Stack>
+            </Card>
           </Grid>
+
           <Grid
             xs={12}
             sm={6}
             lg={3}
           >
-            <OverviewTasksProgress
-              sx={{ height: '100%' }}
-              value={75.5}
-            />
+            <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%'
+                }}
+              >
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      pb: 1
+                    }}
+                  >
+                    <Avatar
+                      src='https://image.pngaaa.com/400/1236400-middle.png'
+                      variant="square"
+                    />
+                  </Box>
+                  <Typography
+                    align="center"
+                    gutterBottom
+                    variant="h5"
+                  >
+                    {collections[1]?.name}
+                  </Typography>
+                  <Typography
+                    align="center"
+                    variant="body1"
+                  >
+                    {collections[1]?.description}
+                  </Typography>
+                </CardContent>
+                <Box sx={{ flexGrow: 1 }} />
+                <Divider />
+                <Stack
+                  alignItems="center"
+                  direction="row"
+                  justifyContent="space-between"
+                  spacing={2}
+                  sx={{ p: 2 }}
+                >
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ShoppingBagIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      125 purchases
+                    </Typography>
+                  </Stack>
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ArrowDownOnSquareIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      35 products
+                    </Typography>
+                  </Stack>
+                </Stack>
+            </Card>
           </Grid>
+
           <Grid
             xs={12}
             sm={6}
             lg={3}
           >
-            <OverviewTotalProfit
-              sx={{ height: '100%' }}
-              value="$15k"
-            />
+            <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%'
+                }}
+              >
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      pb: 1
+                    }}
+                  >
+                    <Avatar
+                      src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB7qyo92IAEafvcHQeRuqDQ1mIeY-NjQTd3z-ierEAA4S5MXb4B53S5JTzDIchYX1OGaY&usqp=CAU'
+                      variant="square"
+                    />
+                  </Box>
+                  <Typography
+                    align="center"
+                    gutterBottom
+                    variant="h5"
+                  >
+                    {collections[2]?.name}
+                  </Typography>
+                  <Typography
+                    align="center"
+                    variant="body1"
+                  >
+                    {collections[2]?.description}
+                  </Typography>
+                </CardContent>
+                <Box sx={{ flexGrow: 1 }} />
+                <Divider />
+                <Stack
+                  alignItems="center"
+                  direction="row"
+                  justifyContent="space-between"
+                  spacing={2}
+                  sx={{ p: 2 }}
+                >
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ShoppingBagIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      125 purchases
+                    </Typography>
+                  </Stack>
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ArrowDownOnSquareIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      35 products
+                    </Typography>
+                  </Stack>
+                </Stack>
+            </Card>
           </Grid>
+
           <Grid
             xs={12}
-            lg={8}
+            sm={6}
+            lg={3}
           >
-            <OverviewSales
-              chartSeries={[
-                {
-                  name: 'This year',
-                  data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20]
-                },
-                {
-                  name: 'Last year',
-                  data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13]
-                }
-              ]}
-              sx={{ height: '100%' }}
-            />
+            <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%'
+                }}
+              >
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      pb: 1
+                    }}
+                  >
+                    <Avatar
+                      src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvuawwoP7VROmt_mEgQ9EVLKEENJv4yCUvGSyr8810v366xDB6jsCGFKbWPguMrMAGagk&usqp=CAU'
+                      variant="square"
+                    />
+                  </Box>
+                  <Typography
+                    align="center"
+                    gutterBottom
+                    variant="h5"
+                  >
+                    {collections[3]?.name}
+                  </Typography>
+                  <Typography
+                    align="center"
+                    variant="body1"
+                  >
+                    {collections[3]?.description}
+                  </Typography>
+                </CardContent>
+                <Box sx={{ flexGrow: 1 }} />
+                <Divider />
+                <Stack
+                  alignItems="center"
+                  direction="row"
+                  justifyContent="space-between"
+                  spacing={2}
+                  sx={{ p: 2 }}
+                >
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ShoppingBagIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      125 purchases
+                    </Typography>
+                  </Stack>
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <SvgIcon
+                      color="action"
+                      fontSize="small"
+                    >
+                      <ArrowDownOnSquareIcon />
+                    </SvgIcon>
+                    <Typography
+                      color="text.secondary"
+                      display="inline"
+                      variant="body2"
+                    >
+                      35 products
+                    </Typography>
+                  </Stack>
+                </Stack>
+            </Card>
           </Grid>
+
+
+        {/* Flash sale */}
+        <Grid
+        xs={12}
+        md={12}>
+          <Card 
+          sx={{
+            flexGrow: 1,
+            py: 0
+          }}>
+            <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  spacing={2}
+                  sx={{ p: 2 }}
+                >
+                  <Stack 
+                  alignItems="center"
+                  direction="row"
+                  >
+                    <Avatar
+                      src='https://media.istockphoto.com/id/1455032686/vector/flash-sale-label-vector-illustration.jpg?s=612x612&w=0&k=20&c=8YKplEoNd606VmQpNa1P3xhP0D8xFmTIJ9gyviNXjaM='
+                      variant="square"
+                    />
+                    <Typography variant="h5">
+                      Flash Sale
+                    </Typography>
+                  </Stack>
+
+                  <Stack
+                  alignItems="center"
+                  direction="row">
+                    <Button
+                      color="inherit"
+                      endIcon={(
+                        <SvgIcon fontSize="small">
+                          <ArrowRightIcon />
+                        </SvgIcon>
+                      )}
+                      size="small"
+                      variant="text"
+                    >
+                      View all
+                    </Button>
+                  </Stack>
+
+                </Stack>
+            </Card>
+        </Grid>
+
+        {/* Display product of flash sale */}
+        <Grid
+        xs={12}
+        md={12}>
+            <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+                {products.map((product) => (
+                  <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
+                      <Card>
+                        <div>
+                        <div class="max-w-md w-full bg-white-900 shadow-lg rounded-xl p-3">
+                          <div class="relative h-62 w-full mb-3">
+                            <img src={`data:${product.images[0].contentType};base64,${product.images[0].data}`} alt="product" class=" w-full h-[250px] object-cover rounded-2xl" />
+                          </div>
+
+                          <div class="flex-auto justify-evenly">
+                            <div class="flex flex-wrap ">
+                              <div class="w-full flex-none text-sm flex items-center text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                              </div>
+                              <div class="flex items-center w-full justify-between min-w-0 ">
+                                <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
+                                <div class="flex items-center bg-green-400 text-white text-xs px-2 py-1 ml-3 rounded-lg">
+                                  INSTOCK</div>
+                              </div>
+                            </div>
+                            <div class="flex items-center">
+                            <span class="text-x text-gray-500 font-semibold mt-1 ml-2 mr-1"><del class="text-gray-500">${product.price}</del></span>
+                              <div class="text-xl text-red-500 font-semibold mt-1">${product.discount}</div>
+                            </div>
+                            
+                            <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
+                              <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
+                                <span>Add Cart</span>
+                                
+                              </button>
+                              <button onClick={handleViewProduct.bind(null, product._id)} class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          </div>
+                        </div>
+                        </Card>
+                  </Grid>
+                ))}
+              </Grid>
+        </Grid>
+
+
+
+        {/* Display 3 promotion banners in here */}
+
           <Grid
             xs={12}
-            md={6}
+            sm={6}
             lg={4}
           >
-            <OverviewTraffic
-              chartSeries={[63, 15, 22]}
-              labels={['Desktop', 'Tablet', 'Phone']}
-              sx={{ height: '100%' }}
-            />
+            <img src={items[0].src} alt={items[0].alt} objectFit="cover" width="100%" height="100%"/>
           </Grid>
           <Grid
             xs={12}
-            md={6}
+            sm={6}
             lg={4}
           >
-            <OverviewLatestProducts
-              products={[
-                {
-                  id: '5ece2c077e39da27658aa8a9',
-                  image: '/assets/products/product-1.png',
-                  name: 'Healthcare Erbology',
-                  updatedAt: subHours(now, 6).getTime()
-                },
-                {
-                  id: '5ece2c0d16f70bff2cf86cd8',
-                  image: '/assets/products/product-2.png',
-                  name: 'Makeup Lancome Rouge',
-                  updatedAt: subDays(subHours(now, 8), 2).getTime()
-                },
-                {
-                  id: 'b393ce1b09c1254c3a92c827',
-                  image: '/assets/products/product-5.png',
-                  name: 'Skincare Soja CO',
-                  updatedAt: subDays(subHours(now, 1), 1).getTime()
-                },
-                {
-                  id: 'a6ede15670da63f49f752c89',
-                  image: '/assets/products/product-6.png',
-                  name: 'Makeup Lipstick',
-                  updatedAt: subDays(subHours(now, 3), 3).getTime()
-                },
-                {
-                  id: 'bcad5524fe3a2f8f8620ceda',
-                  image: '/assets/products/product-7.png',
-                  name: 'Healthcare Ritual',
-                  updatedAt: subDays(subHours(now, 5), 6).getTime()
-                }
-              ]}
-              sx={{ height: '100%' }}
-            />
+            <img src={items[1].src} alt={items[1].alt} objectFit="cover" width="100%" height="100%"/>
           </Grid>
           <Grid
             xs={12}
-            md={12}
-            lg={8}
+            sm={6}
+            lg={4}
           >
-            <OverviewLatestOrders
-              orders={[
-                {
-                  id: 'f69f88012978187a6c12897f',
-                  ref: 'DEV1049',
-                  amount: 30.5,
-                  customer: {
-                    name: 'Ekaterina Tankova'
-                  },
-                  createdAt: 1555016400000,
-                  status: 'pending'
-                },
-                {
-                  id: '9eaa1c7dd4433f413c308ce2',
-                  ref: 'DEV1048',
-                  amount: 25.1,
-                  customer: {
-                    name: 'Cao Yu'
-                  },
-                  createdAt: 1555016400000,
-                  status: 'delivered'
-                },
-                {
-                  id: '01a5230c811bd04996ce7c13',
-                  ref: 'DEV1047',
-                  amount: 10.99,
-                  customer: {
-                    name: 'Alexa Richardson'
-                  },
-                  createdAt: 1554930000000,
-                  status: 'refunded'
-                },
-                {
-                  id: '1f4e1bd0a87cea23cdb83d18',
-                  ref: 'DEV1046',
-                  amount: 96.43,
-                  customer: {
-                    name: 'Anje Keizer'
-                  },
-                  createdAt: 1554757200000,
-                  status: 'pending'
-                },
-                {
-                  id: '9f974f239d29ede969367103',
-                  ref: 'DEV1045',
-                  amount: 32.54,
-                  customer: {
-                    name: 'Clarke Gillebert'
-                  },
-                  createdAt: 1554670800000,
-                  status: 'delivered'
-                },
-                {
-                  id: 'ffc83c1560ec2f66a1c05596',
-                  ref: 'DEV1044',
-                  amount: 16.76,
-                  customer: {
-                    name: 'Adam Denisov'
-                  },
-                  createdAt: 1554670800000,
-                  status: 'delivered'
-                }
-              ]}
-              sx={{ height: '100%' }}
-            />
+            <img src={items[2].src} alt={items[2].alt} objectFit="cover" width="100%" height="100%"/>
           </Grid>
+
+
+
+          {/*User-Product today  */}
+          <Grid
+          xs={12}
+          md={12}>
+            <Card 
+            sx={{
+              flexGrow: 1,
+              py: 0
+            }}>
+              <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    spacing={2}
+                    sx={{ p: 2 }}
+                  >
+                    <Stack 
+                    alignItems="center"
+                    direction="row">
+                      <Avatar
+                        src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJxT1GHzCuslg3PvYgJ9wIp9IH15T7-50FZg&usqp=CAU'
+                        variant="square"
+                      />
+                      <Typography variant="h5">
+                        Featured Products
+                      </Typography>
+                    </Stack>
+                    <Stack
+                    alignItems="center"
+                    direction="row">
+                      <Button
+                        color="inherit"
+                        endIcon={(
+                          <SvgIcon fontSize="small">
+                            <ArrowRightIcon />
+                          </SvgIcon>
+                        )}
+                        size="small"
+                        variant="text"
+                      >
+                        View all
+                      </Button>
+                    </Stack>
+                  </Stack>
+              </Card>
+          </Grid>
+
+          {/* Display featured product */}
+          <Grid
+              xs={12}
+              md={12}>
+                  <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+                      {products.map((product) => (
+                        <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
+                            <Card>
+                              <div>
+                              <div class="max-w-md w-full bg-white-900 shadow-lg rounded-xl p-3">
+                                <div class="relative h-62 w-full mb-3">
+                                  <img src={`data:${product.images[0].contentType};base64,${product.images[0].data}`} alt="product" class=" w-full h-[250px] object-cover rounded-2xl" />
+                                </div>
+
+                                <div class="flex-auto justify-evenly">
+                                  <div class="flex flex-wrap ">
+                                    <div class="w-full flex-none text-sm flex items-center text-gray-600">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                      </svg>
+                                      <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                                    </div>
+                                    <div class="flex items-center w-full justify-between min-w-0 ">
+                                      <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
+                                      <div class="flex items-center bg-green-400 text-white text-xs px-2 py-1 ml-3 rounded-lg">
+                                        INSTOCK</div>
+                                    </div>
+                                  </div>
+                                  <div class="flex items-center">
+                                  <span class="text-x text-gray-500 font-semibold mt-1 ml-2 mr-1"><del class="text-gray-500">${product.price}</del></span>
+                                    <div class="text-xl text-red-500 font-semibold mt-1">${product.discount}</div>
+                                  </div>
+                                  
+                                  <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
+                                    <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
+                                      <span>Add Cart</span>
+                                    </button>
+                                    <button class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                                </div>
+                              </div>
+                              </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  
+              
+
+                
+              </Grid>
+
+
+        {/* Recommendation product today */}
+        <Grid
+        xs={12}
+        md={12}>
+          <Card 
+          sx={{
+            flexGrow: 1,
+            py: 0
+          }}>
+            <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  spacing={2}
+                  sx={{ p: 2 }}
+                >
+                  <Stack 
+                   alignItems="center"
+                   direction="row">
+                    <Avatar
+                      src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3PFSnkBqgurJPn711rxPTt1iIZu7crsU17_bvZ3J59GVjaYqy0zuhzQ5NerhPM3OFaq4&usqp=CAU'
+                      variant="square"
+                    />
+                    <Typography variant="h5">
+                      Today's Products
+                    </Typography>
+                  </Stack>
+                  <Stack
+                  alignItems="center"
+                  direction="row">
+                    <Button
+                      color="inherit"
+                      endIcon={(
+                        <SvgIcon fontSize="small">
+                          <ArrowRightIcon />
+                        </SvgIcon>
+                      )}
+                      size="small"
+                      variant="text"
+                    >
+                      View all
+                    </Button>
+                  </Stack>
+                </Stack>
+            </Card>
+        </Grid>
+
+        {/* Display recommendation product */}
+        <Grid
+        xs={12}
+        md={12}>
+            <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+                {products.map((product) => (
+                  <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
+                      <Card>
+                        <div>
+                        <div class="max-w-md w-full bg-white-900 shadow-lg rounded-xl p-3">
+                          <div class="relative h-62 w-full mb-3">
+                            <img src={`data:${product.images[0].contentType};base64,${product.images[0].data}`} alt="product" class=" w-full h-[250px] object-cover rounded-2xl" />
+                          </div>
+
+                          <div class="flex-auto justify-evenly">
+                            <div class="flex flex-wrap ">
+                              <div class="w-full flex-none text-sm flex items-center text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                              </div>
+                              <div class="flex items-center w-full justify-between min-w-0 ">
+                                <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
+                                <div class="flex items-center bg-green-400 text-white text-xs px-2 py-1 ml-3 rounded-lg">
+                                  INSTOCK</div>
+                              </div>
+                            </div>
+                            <div class="flex items-center">
+                            <span class="text-x text-gray-500 font-semibold mt-1 ml-2 mr-1"><del class="text-gray-500">${product.price}</del></span>
+                              <div class="text-xl text-red-500 font-semibold mt-1">${product.discount}</div>
+                            </div>
+                            
+                            <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
+                              <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
+                                <span>Add Cart</span>
+                              </button>
+                              <button class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          </div>
+                        </div>
+                        </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            
+         
+
+          
+        </Grid>
+        
+
+
+         
+         
+    
+        
         </Grid>
       </Container>
     </Box>
   </>
-);
+)};
 
 Page.getLayout = (page) => (
   <DashboardLayout>

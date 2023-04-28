@@ -48,11 +48,11 @@ export const SideNav = (props) => {
             href="/"
             sx={{
               display: 'inline-flex',
-              height: 32,
-              width: 32
+              height: 120,
+              width: 250
             }}
           >
-            <Logo />
+          <img src="/assets/selinashoplogonavnobg.png" alt='' width="250px"></img>
           </Box>
           {/* <Box
             sx={{
@@ -128,24 +128,24 @@ export const SideNav = (props) => {
     </Scrollbar>
   );
 
-  if (lgUp) {
-    return (
-      <Drawer
-        anchor="left"
-        open
-        PaperProps={{
-          sx: {
-            backgroundColor: 'neutral.800',
-            color: 'common.white',
-            width: 280
-          }
-        }}
-        variant="permanent"
-      >
-        {content}
-      </Drawer>
-    );
-  }
+  // if (lgUp) {
+  //   return (
+  //     <Drawer
+  //       anchor="left"
+  //       open
+  //       PaperProps={{
+  //         sx: {
+  //           backgroundColor: 'neutral.800',
+  //           color: 'common.white',
+  //           width: 280
+  //         }
+  //       }}
+  //       variant="permanent"
+  //     >
+  //       {content}
+  //     </Drawer>
+  //   );
+  // }
 
   return (
     <Drawer
