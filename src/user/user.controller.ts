@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/auth/roles/roles.decorator';
 import { RolesGuard } from 'src/auth/roles/roles.guard';
@@ -29,6 +29,15 @@ export class UserController {
   async getUserById(@Param('id') userId: string) {
     return await this.userService.getUserById(userId);
   }
+
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Get('/profile')
+  // @Roles('seller', 'customer')
+  // async getUserProfile(@Request() req: any) {
+  //   const userId = req.user.sub;
+  //   console.log("userId", req.user.sub)
+  //   return await this.userService.getUserById(userId.toString());
+  // }
 
   @Patch(':id')
   @Roles('seller', 'customer')
