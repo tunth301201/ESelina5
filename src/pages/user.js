@@ -26,7 +26,7 @@ import CreateUser from 'src/sections/user/user-create';
 import UpdateUser from 'src/sections/user/user-update';
 import ViewUser from 'src/sections/user/user-view';
 import { format } from 'date-fns';
-import { getAllUsers } from 'src/api/apiService';
+import { getAllUsers, getUserById } from 'src/api/apiService';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -86,7 +86,7 @@ const Page = () => {
       setUsers(res.data);
     })
     .catch((err) => {
-      console.error("Error getting user:", error);
+      console.error("Error getting user:", err);
     });
   }, []);
   
@@ -136,18 +136,12 @@ const Page = () => {
     { 
       field: 'name', 
       headerName: 'Name', 
-      headerAlign: 'center',
+      headerAlign: 'left',
       flex: 1, 
       sortable: true,
       minWidth: 300,
       renderCell: (params) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar
-          src={params.row.avatar}
-          alt={params.row.firstname}
-          style={{ width: 40, height: 40, marginRight: 10 }}
-        />
-        
         <Typography variant="subtitle2">
           {params.row.firstname} {params.row.lastname}
         </Typography>
@@ -190,11 +184,10 @@ const Page = () => {
         const handleMenuClose = () => {
           setAnchorEl(null);
         };
-        const handleViewClick = () => {
-          const viewUser = {
-            id: params.row.id,
-          };
-          setSelectedUser(viewUser);
+        const handleViewClick = async () => {
+          await getUserById(params.row.id).then((res) => {
+            setSelectedUser(res.data)
+          })
           setOpenView(true);
           handleMenuClose();
         };
@@ -209,6 +202,8 @@ const Page = () => {
         const handleDeleteClick = () => {
           const deleteUser = {
             id: params.row.id,
+            firstname: params.row.firstname,
+            lastname: params.row.lastname,
           };
           setSelectedDeleteUser(deleteUser);
           setOpenDelete(true);
@@ -257,7 +252,6 @@ const rows = users.map((item) => {
       id: item._id,
       firstname: item.firstname,
       lastname: item.lastname,
-      avatar: "/assets/avatars/avatar-anika-visser.png",
       email: item.email,
       noOfOrders: 10,
       role: item.role,
@@ -408,7 +402,7 @@ const rows = users.map((item) => {
                 open={openView}
               >
                 <ViewUser 
-                //  User={selectedUser}
+                 User={selectedUser}
                 />
               </BootstrapDialog>
           </div>

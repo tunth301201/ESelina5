@@ -112,6 +112,7 @@ import { createPromotion } from 'src/api/apiService';
           console.log(startDate)
           console.log(endDate)
           console.log(newPromotion)
+
           createPromotion(newPromotion).then((res) => {
             onSubmit(res.data);
           });
@@ -214,7 +215,7 @@ import { createPromotion } from 'src/api/apiService';
                 >
                   <TextField
                     fullWidth
-                    label="End Date (%)"
+                    label="End Date"
                     name="endDate"
                     value={endDate}
                     onChange={handleEndDateChange}

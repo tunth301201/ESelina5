@@ -125,3 +125,75 @@ import axios from 'axios';
           console.log(err)
       })
   }
+
+  export const getOnePromotion = async (id) => {
+    return await axios.get(`http://localhost:4000/promotion/${id}`)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+// =========================User======================
+export const createUser = async (createUserDto) => {
+  return await axios.post("http://localhost:4000/user", createUserDto, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getUserById = async (id) => {
+  return await axios.get(`http://localhost:4000/user/${id}`,{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getUserProfile = async () => {
+  return await axios.get("http://localhost:4000/user/profile",{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+// ================Order==============
+export const getAllOrders = async () => {
+  return await axios.get(`http://localhost:4000/order`,{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}

@@ -6,17 +6,58 @@ import {
   RadioGroup, TextField,
   Unstable_Grid2 as Grid
 } from '@mui/material';
-import { useCallback } from 'react';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { useCallback, useState } from 'react';
+import { useFormik } from 'formik';
+import { createUser } from 'src/api/apiService';
   
   
   const CreateUser = () => {
+    const formik = useFormik({
+      initialValues: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        passwordConfirm: '',
+        gender: 'female',
+        birthday: Date.now(),
+        phone: '',
+        address: '',
+        submit: null
+      },
+      onSubmit: async(values) => {
+        console.log("formik value: ", values);
+        try{
+          var createUserDto = {
+            email: values.email,
+            password: values.password,
+            firstname: values.firstName,
+            lastname: values.lastName,
+            gender: values.gender,
+            birthday: values.birthday.toString(),
+            phone: values.phone,
+            address: values.address,
+            role: "seller",
+          }
+          createUser(createUserDto);
+        } catch(err) {
+          
+        }
+      }
+    });
+
     // const [values, setValues] = useState({
-    //   firstName: 'Anika',
-    //   lastName: 'Visser',
-    //   email: 'demo@devias.io',
+    //   firstName: '',
+    //   lastName: '',
+    //   email: '',
+    //   password: '',
+    //   passwordConfirm: '',
+    //   gender: 'female',
+    //   birthday: Date.now(),
     //   phone: '',
-    //   state: 'los-angeles',
-    //   country: 'USA'
+    //   address: ''
     // });
   
     // const handleChange = useCallback(
@@ -29,23 +70,19 @@ import { useCallback } from 'react';
     //   []
     // );
   
-    const handleSubmit = useCallback(
-      (event) => {
-        event.preventDefault();
-      },
-      []
-    );
+    // const handleSubmit = useCallback(
+    //   (event) => {
+    //     event.preventDefault();
+    //   },
+    //   []
+    // );
   
-  
-    const handleSelectFileClick = () => {
-      inputRef.current.click();
-    };
   
     return (
       <form
         autoComplete="off"
         noValidate
-        onSubmit={handleSubmit}
+        onSubmit={formik.handleSubmit}
       >
         <Card>
           <CardHeader
@@ -66,8 +103,9 @@ import { useCallback } from 'react';
                     fullWidth
                     label="Email"
                     name="email"
-                    // onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
+                    value={formik.values.email}
                   />
                 </Grid>
                 <Grid
@@ -78,8 +116,9 @@ import { useCallback } from 'react';
                     fullWidth
                     label="First Name"
                     name="firstName"
-                    // onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
+                    values={formik.values.firstname}
                   >
                   </TextField>
                 </Grid>
@@ -91,8 +130,9 @@ import { useCallback } from 'react';
                     fullWidth
                     label="Last Name"
                     name="lastName"
-                    // onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
+                    value={formik.values.lastname}
                   />
                 </Grid>
                 <Grid
@@ -102,8 +142,11 @@ import { useCallback } from 'react';
                   <RadioGroup
                     row
                     style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                    name='gender'
+                    value={formik.values.gender}
+                    onChange={formik.handleChange}
                   >
-                    <FormControlLabel value="female" control={<Radio />} label="Female" checked labelPlacement="top"/>
+                    <FormControlLabel value="female" control={<Radio />} label="Female" labelPlacement="top"/>
                     <FormControlLabel value="male" control={<Radio />} label="Male" labelPlacement="top"/>
                   </RadioGroup>
   
@@ -118,8 +161,11 @@ import { useCallback } from 'react';
                     label="Password"
                     name="password"
                     type="password"
+                    onChange={formik.handleChange}
+                    value={formik.values.password}
                   />
                 </Grid>
+
                 <Grid
                   xs={12}
                   md={6}
@@ -127,8 +173,56 @@ import { useCallback } from 'react';
                   <TextField
                     fullWidth
                     label="Password (Confirm)"
-                    name="confirm"
+                    name="passwordConfirm"
                     type="password"
+                    onChange={formik.handleChange}
+                    value={formik.values.passwordConfirm}
+                  />
+                </Grid>
+                
+
+                <Grid
+                xs={12}
+                md={6}
+                >
+                  <TextField
+                  fullWidth
+                  label="Phone"
+                  name="phone"
+                  onChange={formik.handleChange}
+                  value={formik.values.phone}
+                   />
+                </Grid>
+
+                <Grid
+                xs={12}
+                md={6}
+                >
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker 
+                    disableFuture
+                    label="Birthday"
+                    openTo="year"
+                    views={['year', 'month', 'day']}
+                    value={formik.values.birthday}
+                    onChange={(value) => {
+                      formik.setFieldValue('birthday', Date.parse(value));
+                    }}
+                    renderInput={(params) => <TextField {...params} />}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+
+                <Grid
+                  xs={12}
+                  md={12}
+                >
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    name="address"
+                    onChange={formik.handleChange}
+                    value={formik.values.address}
                   />
                 </Grid>
 
@@ -137,7 +231,7 @@ import { useCallback } from 'react';
           </CardContent>
           <Divider />
           <CardActions sx={{ justifyContent: 'flex-end' }} style={{ justifyContent: 'center' }}>
-            <Button variant="contained">
+            <Button variant="contained" type='submit'>
               Add user
             </Button>
           </CardActions>

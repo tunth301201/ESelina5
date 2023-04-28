@@ -23,9 +23,9 @@ import { useEffect, useState } from 'react';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import CreatePromotion from 'src/sections/promotion/promotion-create';
 import UpdatePromotion from 'src/sections/promotion/promotion-update';
-// import ViewPromotion from 'src/sections/promotion/promotion-view';
+import ViewPromotion from 'src/sections/promotion/promotion-view';
 import { format } from 'date-fns';
-import { getAllProducts, getAllPromorions } from 'src/api/apiService';
+import { getAllProducts, getAllPromorions, getOnePromotion } from 'src/api/apiService';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -184,11 +184,10 @@ const Page = () => {
         const handleMenuClose = () => {
           setAnchorEl(null);
         };
-        const handleViewClick = () => {
-          const viewPromotion = {
-            id: params.row.id,
-          };
-          setSelectedPromotion(viewPromotion);
+        const handleViewClick = async () => {
+          await getOnePromotion(params.row.id).then((res) => {
+            setSelectedPromotion(res.data);
+          })
           setOpenView(true);
           handleMenuClose();
         };
@@ -227,7 +226,6 @@ const Page = () => {
               onClose={handleMenuClose}
             >
               <MenuItem onClick={handleViewClick}>View</MenuItem>
-              <MenuItem onClick={handleEditClick}>Edit</MenuItem>
               <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
             </Menu>
           </div>
@@ -405,10 +403,12 @@ const rows = promotions.map((item) => {
                 onClose={handleViewClose}
                 aria-labelledby="customized-dialog-title"
                 open={openView}
+                maxWidth="lg"
               >
-                {/* <ViewPromotion 
+                <ViewPromotion 
                  Promotion={selectedPromotion}
-                /> */}
+                 Product={products}
+                />
               </BootstrapDialog>
           </div>
           {/* View Promotion Dialod end */}
@@ -419,6 +419,7 @@ const rows = promotions.map((item) => {
                 onClose={handleDeleteClose}
                 aria-labelledby="customized-dialog-title"
                 open={openDelete}
+               
               >
                 <DialogContent dividers>
                   Are you sure to delete {selectedDeletePromotion ? `${selectedDeletePromotion.name}` : 'this Promotion'}?

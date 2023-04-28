@@ -22,12 +22,13 @@ import {
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Head from 'next/head';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import ViewOrderDetail from 'src/sections/order/order-view';
 import { SeverityPill } from 'src/components/severity-pill';
 import { format } from 'date-fns';
 import SwipeableViews from 'react-swipeable-views';
+import { getAllOrders } from 'src/api/apiService';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -103,93 +104,26 @@ BootstrapDialogTitle.propTypes = {
 };
 
 const statusMap = {
-    pending: 'warning',
-    delivering: 'primary',
+    waiting: 'warning',
+    shipping: 'primary',
     delivered: 'success',
-    refund: 'error'
+    return: 'error'
   };
 
-
-const orders=[
-    {
-      id: 'f69f88012978187a6c12897f',
-      order_id: 'DEV1049',
-      amount: 30.5,
-      quantity: 10,
-      billing_address: "bsfbfbjlevlj",
-      customer: {
-        name: 'Ekaterina Tankova'
-      },
-      createdAt: 1555016400000,
-      status: 'pending'
-    },
-    {
-      id: '9eaa1c7dd4433f413c308ce2',
-      order_id: 'DEV1048',
-      quantity: 10,
-      billing_address: "bsfbfbjlevlj",
-      amount: 25.1,
-      customer: {
-        name: 'Cao Yu'
-      },
-      createdAt: 1555016400000,
-      status: 'delivered'
-    },
-    {
-      id: '01a5230c811bd04996ce7c13',
-      order_id: 'DEV1047',
-      quantity: 10,
-      billing_address: "bsfbfbjlevlj",
-      amount: 10.99,
-      customer: {
-        name: 'Alexa Richardson'
-      },
-      createdAt: 1554930000000,
-      status: 'refund'
-    },
-    {
-      id: '1f4e1bd0a87cea23cdb83d18',
-      order_id: 'DEV1046',
-      quantity: 10,
-      billing_address: "bsfbfbjlevlj",
-      amount: 96.43,
-      customer: {
-        name: 'Anje Keizer'
-      },
-      createdAt: 1554757200000,
-      status: 'delivering'
-    },
-    {
-      id: '9f974f239d29ede969367103',
-      order_id: 'DEV1045',
-      quantity: 10,
-      billing_address: "bsfbfbjlevlj",
-      amount: 32.54,
-      customer: {
-        name: 'Clarke Gillebert'
-      },
-      createdAt: 1554670800000,
-      status: 'delivered'
-    },
-    {
-      id: 'ffc83c1560ec2f66a1c05596',
-      order_id: 'DEV1044',
-      quantity: 10,
-      billing_address: "bsfbfbjlevlj",
-      amount: 16.76,
-      customer: {
-        name: 'Adam Denisov'
-      },
-      createdAt: 1554670800000,
-      status: 'delivered'
-    }
-  ];
 
 
 const Page = () => {
   const [open, setOpen] = useState(false);
 
   const [value, setValue] = useState(0);
+
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    getAllOrders().then((res) => {
+      setOrders(res.data);
+    })
+  })
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -229,6 +163,25 @@ const Page = () => {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  function formatDateTimeDislay(inputString) {
+    // Convert input string to JavaScript Date object
+    var date = new Date(inputString);
+  
+    // Extract individual components (year, month, day, hours, minutes, seconds) from the Date object
+    var year = date.getFullYear();
+    var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed, so we add 1 and pad with leading zero
+    var day = ("0" + date.getDate()).slice(-2); // Pad with leading zero
+    var hours = ("0" + date.getHours()).slice(-2); // Pad with leading zero
+    var minutes = ("0" + date.getMinutes()).slice(-2); // Pad with leading zero
+    var seconds = ("0" + date.getSeconds()).slice(-2); // Pad with leading zero
+  
+    // Format the date and time components into a user-friendly string
+    var formattedDateTime = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+  
+    // Return the formatted date and time string
+    return formattedDateTime;
+  }
+
   const columns = [
     { field: 'orderId', headerName: 'Order ID', headerAlign: 'left', align: 'left', flex: 1, sortable: true},
     { field: 'customerName', headerName: 'Customer', flex: 1, sortable: true, align: 'left', headerAlign: 'left' },
@@ -255,7 +208,7 @@ const Page = () => {
         align: 'right', 
         headerAlign: 'right',
         renderCell: (params) => {
-        let createdAt = format(params.row.createdAt, 'dd/MM/yyyy');
+        let createdAt = formatDateTimeDislay(params.row.createdAt);
         return (
             <Typography variant="subtitle2">
                 {createdAt}
@@ -281,15 +234,7 @@ const Page = () => {
           setAnchorEl(null);
         };
         const handleViewClick = () => {
-          // const viewOrder = {
-          //   id: params.row.id,
-          //   name: params.row.name,
-          //   image: params.row.image,
-          //   collection: params.row.collection,
-          //   stock: params.row.stock,
-          //   price: params.row.price
-          // };
-          // setSelectedOrder(viewOrder);
+          setSelectedOrder(params.row.id);
           setOpenView(true);
           handleMenuClose();
         };
@@ -330,66 +275,98 @@ const Page = () => {
 
 
 const rows = orders.map((item) => {
+  const {order_items} = item
+  const totalQuantity = order_items.reduce((acc, cartItem) => {
+    return acc + cartItem.quantity;
+  }, 0);
     return {
-      id: item.id,
-      orderId: item.order_id,
-      amount: item.amount,
-      quantity: item.quantity,
-      billingAddress: item.billing_address,
-      customerName: item.customer.name,
+      id: item._id,
+      orderId: item.order_number,
+      amount: item.total_price,
+      quantity: totalQuantity,
+      billingAddress: item.delivery_address,
+      customerName: item.user_id.firstname + ' ' + item.user_id.lastname,
       createdAt: item.createdAt,
-      status: item.status
+      status: item.order_status,
     };
   });
 
-const pendingrows = orders.filter(order => order.status === 'pending').map((item) => {
+  const pendingrows = orders.filter(order => order.order_status === 'waiting').map((item) => {
+  
+    const {order_items} = item
+    const totalQuantity = order_items.reduce((acc, cartItem) => {
+      return acc + cartItem.quantity;
+    }, 0);  
     return {
-      id: item.id,
-      orderId: item.order_id,
-      amount: item.amount,
-      quantity: item.quantity,
-      billingAddress: item.billing_address,
-      customerName: item.customer.name,
-      createdAt: item.createdAt,
-      status: item.status
-    };
-  });
-const deliveringrows = orders.filter(order => order.status === 'delivering').map((item) => {
+        id: item._id,
+        orderId: item.order_number,
+        amount: item.total_price,
+        quantity: totalQuantity,
+        billingAddress: item.delivery_address,
+        customerName: item.user_id.firstname + ' ' + item.user_id.lastname,
+        createdAt: item.createdAt,
+        status: item.order_status,
+      };
+    });
+  const deliveringrows = orders.filter(order => order.order_status === 'shipping').map((item) => {
+    const {order_items} = item
+    const totalQuantity = order_items.reduce((acc, cartItem) => {
+      return acc + cartItem.quantity;
+    }, 0);  
     return {
-      id: item.id,
-      orderId: item.order_id,
-      amount: item.amount,
-      quantity: item.quantity,
-      billingAddress: item.billing_address,
-      customerName: item.customer.name,
-      createdAt: item.createdAt,
-      status: item.status
-    };
-  });
-const deliveredrows = orders.filter(order => order.status === 'delivered').map((item) => {
+        id: item._id,
+        orderId: item.order_number,
+        amount: item.total_price,
+        quantity: totalQuantity,
+        billingAddress: item.delivery_address,
+        customerName: item.user_id.firstname + ' ' + item.user_id.lastname,
+        createdAt: item.createdAt,
+        status: item.order_status,
+      };
+    });
+  const deliveredrows = orders.filter(order => order.order_status === 'delivered').map((item) => {
+    const {order_items} = item
+    const totalQuantity = order_items.reduce((acc, cartItem) => {
+      return acc + cartItem.quantity;
+    }, 0);  
     return {
-      id: item.id,
-      orderId: item.order_id,
-      amount: item.amount,
-      quantity: item.quantity,
-      billingAddress: item.billing_address,
-      customerName: item.customer.name,
-      createdAt: item.createdAt,
-      status: item.status
-    };
-  });
-const refundrows = orders.filter(order => order.status === 'refund').map((item) => {
+        id: item._id,
+        orderId: item.order_number,
+        amount: item.total_price,
+        quantity: totalQuantity,
+        billingAddress: item.delivery_address,
+        customerName: item.user_id.firstname + ' ' + item.user_id.lastname,
+        createdAt: item.createdAt,
+        status: item.order_status,
+      };
+    });
+  const refundrows = orders.filter(order => order.order_status === 'return').map((item) => {
+    const {order_items} = item
+    const totalQuantity = order_items.reduce((acc, cartItem) => {
+      return acc + cartItem.quantity;
+    }, 0);  
     return {
-      id: item.id,
-      orderId: item.order_id,
-      amount: item.amount,
-      quantity: item.quantity,
-      billingAddress: item.billing_address,
-      customerName: item.customer.name,
-      createdAt: item.createdAt,
-      status: item.status
+        id: item._id,
+        orderId: item.order_number,
+        amount: item.total_price,
+        quantity: totalQuantity,
+        billingAddress: item.delivery_address,
+        customerName: item.user_id.firstname + ' ' + item.user_id.lastname,
+        createdAt: item.createdAt,
+        status: item.order_status,
+      };
+    });
+
+    const [sortModel, setSortModel] = useState([
+      {
+        field: 'createdAt',
+        sort: 'desc',
+      },
+    ]);
+
+    const handleSortModelChange = (newSortModel) => {
+      setSortModel(newSortModel);
     };
-  });
 
   return (
     <>
@@ -427,28 +404,6 @@ const refundrows = orders.filter(order => order.status === 'refund').map((item) 
                 spacing={2}
                 sx={{ p: 2 }}
               >
-                <Stack
-                  alignItems="center"
-                  direction="row"
-                  spacing={1}
-                >
-                  <OutlinedInput
-                      defaultValue=""
-                      fullWidth
-                      placeholder="Search order ID"
-                      startAdornment={(
-                        <InputAdornment position="start">
-                          <SvgIcon
-                            color="action"
-                            fontSize="small"
-                          >
-                            <MagnifyingGlassIcon />
-                          </SvgIcon>
-                        </InputAdornment>
-                      )}
-                      sx={{ maxWidth: 500 }}
-                    />
-                </Stack>
 
                 {value === 1 && (
                     <Stack
@@ -499,76 +454,150 @@ const refundrows = orders.filter(order => order.status === 'refund').map((item) 
                             autoHeight 
                             rows={rows} 
                             columns={columns}
+                            sortModel={sortModel}
+                            onSortModelChange={handleSortModelChange}
                             slots={{ toolbar: GridToolbar }}
                             disableColumnSelector
                             disableDensitySelector
                             initialState={{
                             pagination: {paginationModel: {pageSize: 10}},
+                            filter: {
+                              filterModel: {
+                                items: [],
+                                
+                              },
+                            },
+                            }}
+                            slotProps={{
+                              toolbar: {
+                                showQuickFilter: true,
+                                quickFilterProps: { debounceMs: 500 },
+                              },
                             }}
                             getRowHeight={() => 'auto'} 
                             pageSizeOptions={[10, 25, 50]} />
                     </div>
                 </TabPanel>
+
                 <TabPanel value={value} index={1} >
                 <div style={{ width: '100%'}}>
                         <DataGrid 
                             autoHeight 
                             rows={pendingrows} 
                             columns={columns}
-                            checkboxSelection disableRowSelectionOnClick
+                            sortModel={sortModel}
+                            onSortModelChange={handleSortModelChange}
                             slots={{ toolbar: GridToolbar }}
                             disableColumnSelector
                             disableDensitySelector
+                            checkboxSelection
                             initialState={{
                             pagination: {paginationModel: {pageSize: 10}},
+                            filter: {
+                              filterModel: {
+                                items: [],
+                                
+                              },
+                            },
+                            }}
+                            slotProps={{
+                              toolbar: {
+                                showQuickFilter: true,
+                                quickFilterProps: { debounceMs: 500 },
+                              },
                             }}
                             getRowHeight={() => 'auto'} 
                             pageSizeOptions={[10, 25, 50]} />
                     </div>
                 </TabPanel>
+
                 <TabPanel value={value} index={2} >
                 <div style={{ width: '100%'}}>
                         <DataGrid 
                             autoHeight 
                             rows={deliveringrows} 
                             columns={columns}
+                            sortModel={sortModel}
+                            onSortModelChange={handleSortModelChange}
                             slots={{ toolbar: GridToolbar }}
                             disableColumnSelector
                             disableDensitySelector
                             initialState={{
                             pagination: {paginationModel: {pageSize: 10}},
+                            filter: {
+                              filterModel: {
+                                items: [],
+                                
+                              },
+                            },
+                            }}
+                            slotProps={{
+                              toolbar: {
+                                showQuickFilter: true,
+                                quickFilterProps: { debounceMs: 500 },
+                              },
                             }}
                             getRowHeight={() => 'auto'} 
                             pageSizeOptions={[10, 25, 50]} />
                     </div>
                 </TabPanel>
+
                 <TabPanel value={value} index={3} >
                 <div style={{ width: '100%'}}>
                         <DataGrid 
                             autoHeight 
                             rows={deliveredrows} 
                             columns={columns}
+                            sortModel={sortModel}
+                            onSortModelChange={handleSortModelChange}
                             slots={{ toolbar: GridToolbar }}
                             disableColumnSelector
                             disableDensitySelector
                             initialState={{
                             pagination: {paginationModel: {pageSize: 10}},
+                            filter: {
+                              filterModel: {
+                                items: [],
+                                
+                              },
+                            },
+                            }}
+                            slotProps={{
+                              toolbar: {
+                                showQuickFilter: true,
+                                quickFilterProps: { debounceMs: 500 },
+                              },
                             }}
                             getRowHeight={() => 'auto'} 
                             pageSizeOptions={[10, 25, 50]} />
                     </div>
                 </TabPanel>
+
                 <TabPanel value={value} index={4} >
                 <div style={{ width: '100%'}}>
                         <DataGrid 
                             autoHeight 
                             rows={refundrows} 
                             columns={columns}
+                            sortModel={sortModel}
+                            onSortModelChange={handleSortModelChange}
                             slots={{ toolbar: GridToolbar }}
                             disableColumnSelector
                             disableDensitySelector
                             initialState={{
                             pagination: {paginationModel: {pageSize: 10}},
+                            filter: {
+                              filterModel: {
+                                items: [],
+                                
+                              },
+                            },
+                            }}
+                            slotProps={{
+                              toolbar: {
+                                showQuickFilter: true,
+                                quickFilterProps: { debounceMs: 500 },
+                              },
                             }}
                             getRowHeight={() => 'auto'} 
                             pageSizeOptions={[10, 25, 50]} />

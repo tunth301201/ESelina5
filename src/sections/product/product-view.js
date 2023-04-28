@@ -16,7 +16,7 @@ import {
     // Get product (id, name, ...) from products.js
     const {
         product
-    } = props;
+    } = props; 
   
     const UploadBox = styled(Box)({
       display: 'flex',

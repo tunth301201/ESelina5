@@ -32,15 +32,8 @@ const Page = () => (
             >
               <Grid
                 xs={12}
-                md={6}
-                lg={4}
-              >
-                <AccountProfile />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-                lg={8}
+                md={12}
+                lg={12}
               >
                 <AccountProfileDetails />
               </Grid>
