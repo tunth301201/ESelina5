@@ -9,30 +9,17 @@ import {
   } from '@mui/material';
   import { useCallback, useRef, useState } from 'react';
 import { createCategory } from 'src/api/apiService';
+import { useFormik } from 'formik';
   
   
   const CreateCollection = ({ onSuccess, onSubmit }) => {
-    const [values, setValues] = useState({
-      name: "",
-      description: ""
-    });
-  
-    const handleChange = useCallback(
-      (event) => {
-        setValues((prevState) => ({
-          ...prevState,
-          [event.target.name]: event.target.value
-        }));
-      }, 
-      []
-    );
 
-    
-  
-    const handleSubmit = useCallback(
-      (event) => {
-        event.preventDefault();
-
+    const formik = useFormik({
+      initialValues: {
+        name: "",
+        description: ""
+      },
+      onSubmit: async(values) => {
         try {
           const newCategory = {
             name: values.name,
@@ -40,23 +27,23 @@ import { createCategory } from 'src/api/apiService';
           }
           createCategory(newCategory).then((res) => {
             onSubmit(res.data);
+            onSuccess(res.data); 
           });
           
-          onSuccess(); 
           
         } catch (error) {
           console.log('Error creating category:', error);
         }
-      },
-      [values.name, values.description, onSuccess]
-    );
+      }
+    })
+
   
  
     return (
       <form
         autoComplete="off"
         noValidate
-        onSubmit={handleSubmit}
+        onSubmit={formik.handleSubmit}
       >
         <Card>
           <CardHeader
@@ -77,9 +64,9 @@ import { createCategory } from 'src/api/apiService';
                     fullWidth
                     label="Name"
                     name="name"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
-                    value={values.name}
+                    value={formik.values.name}
                   />
                 </Grid>
                 
@@ -91,10 +78,10 @@ import { createCategory } from 'src/api/apiService';
                     fullWidth
                     label="Description"
                     name="description"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
                     multiline
-                    value={values.description}
+                    value={formik.values.description}
                   />
   
                 </Grid>

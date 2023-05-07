@@ -1,7 +1,7 @@
 import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
 import XMarkIcon from '@heroicons/react/24/solid/XMarkIcon';
-import { MoreVert } from '@mui/icons-material';
+import { RemoveRedEye } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -28,7 +28,7 @@ import ViewOrderDetail from 'src/sections/order/order-view';
 import { SeverityPill } from 'src/components/severity-pill';
 import { format } from 'date-fns';
 import SwipeableViews from 'react-swipeable-views';
-import { getAllOrders } from 'src/api/apiService';
+import { getAllOrders, updateOrderStatus } from 'src/api/apiService';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -119,6 +119,8 @@ const Page = () => {
 
   const [orders, setOrders] = useState([]);
 
+  const [selectedRows, setSelectedRows] = useState([]);
+
   useEffect(() => {
     getAllOrders().then((res) => {
       setOrders(res.data);
@@ -133,8 +135,8 @@ const Page = () => {
     setValue(index);
   };
 
-  const handleAddClick = () => {
-    setOpen(true);
+  const handleUpdateClick = () => {
+    selectedRows.map((row) => updateOrderStatus(row.id));
   };
 
   const handleClose = () => {
@@ -238,35 +240,16 @@ const Page = () => {
           setOpenView(true);
           handleMenuClose();
         };
-        const handleDeleteClick = () => {
-          const deleteOrder = {
-            id: params.row.id,
-            order_id: params.row.orderId,
-          };
-          setSelectedDeleteOrder(deleteOrder);
-          setOpenDelete(true);
-          handleMenuClose();
-        };
         return (
           <div>
             <IconButton
               aria-controls={`actions-menu-${params.id}`}
               aria-haspopup="true"
               aria-label="Actions"
-              onClick={handleMenuOpen}
+              onClick={handleViewClick}
             >
-              <MoreVert />
+              <RemoveRedEye />
             </IconButton>
-            <Menu
-              id={`actions-menu-${params.id}`}
-              anchorEl={anchorEl}
-              keepMounted
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              <MenuItem onClick={handleViewClick}>View</MenuItem>
-              <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
-            </Menu>
           </div>
         );
       },
@@ -396,7 +379,9 @@ const rows = orders.map((item) => {
               </Stack>
             </Stack>
             
+           
             <Card>
+            {value === 1 && (
               <Stack
                 alignItems="center"
                 direction="row"
@@ -404,8 +389,6 @@ const rows = orders.map((item) => {
                 spacing={2}
                 sx={{ p: 2 }}
               >
-
-                {value === 1 && (
                     <Stack
                         alignItems="center"
                         direction="row"
@@ -418,15 +401,16 @@ const rows = orders.map((item) => {
                             </SvgIcon>
                             )}
                             variant="contained"
-                            onClick={handleAddClick}
+                            onClick={handleUpdateClick}
                         >
                             Shipping
                         </Button>
                     </Stack>
-                )}
-
+                
               </Stack>
+               )}
             </Card>
+           
 
             <Card>
             <Tabs
@@ -491,6 +475,14 @@ const rows = orders.map((item) => {
                             disableColumnSelector
                             disableDensitySelector
                             checkboxSelection
+                            onRowSelectionModelChange={(ids) => {
+                              const selectedIDs = new Set(ids);
+                              const selectedRows = rows.filter((row) =>
+                                selectedIDs.has(row.id),
+                              );
+                    
+                              setSelectedRows(selectedRows);
+                            }}
                             initialState={{
                             pagination: {paginationModel: {pageSize: 10}},
                             filter: {
@@ -616,30 +608,12 @@ const rows = orders.map((item) => {
                 open={openView}
               >
                 <ViewOrderDetail 
+                Order={selectedOrder}
                 />
               </BootstrapDialog>
           </div>
           {/* View Order Dialod end */}
 
-          {/* Delete Dialog start */}
-          <div>
-            <BootstrapDialog
-                onClose={handleDeleteClose}
-                aria-labelledby="customized-dialog-title"
-                open={openDelete}
-              >
-                <DialogContent dividers>
-                  Are you sure to delete {selectedDeleteOrder ? `${selectedDeleteOrder.order_id}` : 'this Order'}?
-                </DialogContent>
-                <DialogActions style={{ justifyContent: 'center' }}>
-                  <Button onClick={handleDeleteClose}>No</Button>
-                  <Button autoFocus onClick={handleDeleteClose} variant="contained">
-                    Yes
-                  </Button>
-                </DialogActions>
-              </BootstrapDialog>
-          </div>
-          {/* Delete Dialog end */}
         </Container>
       </Box>
     </>

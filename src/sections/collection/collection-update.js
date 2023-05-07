@@ -10,28 +10,17 @@ import {
   import { useCallback, useRef, useState } from 'react';
   import PropTypes from 'prop-types';
   import { updateCategory } from 'src/api/apiService';
+import { useFormik } from 'formik';
   
   const UpdateCollection = (props) => {
     const { Collection, onSuccess, onSubmit } = props;
 
-    const [values, setValues] = useState({
-      name: Collection.name,
-      description: Collection.description,
-    });
-
-    const handleChange = useCallback(
-      (event) => {
-        setValues((prevState) => ({
-          ...prevState,
-          [event.target.name]: event.target.value
-        }));
+    const formik = useFormik({
+      initialValues: {
+        name: Collection.name,
+        description: Collection.description,
       },
-      []
-    );
-
-    const handleSubmit = useCallback(
-      (event) => {
-        event.preventDefault();
+      onSubmit: async(values) => {
         try {
           const upCategory = {
             name: values.name,
@@ -40,21 +29,22 @@ import {
           console.log(Collection)
           updateCategory(Collection.id, upCategory).then((res) => {
             onSubmit(res.data);
+            onSuccess(res.data); 
           });
-          onSuccess(); 
+          
         } catch (e) {
           console.log('Error updating category:', e);
         }
-      },
-      [values.name, values.description, onSuccess]
-    );
+      }
+    });
+
   
   
     return (
       <form
         autoComplete="off"
         noValidate
-        onSubmit={handleSubmit}
+        onSubmit={formik.handleSubmit}
       >
         <Card>
           <CardHeader
@@ -74,9 +64,9 @@ import {
                     fullWidth
                     label="Name"
                     name="name"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
-                    defaultValue={values.name}
+                    defaultValue={formik.values.name}
                   />
                 </Grid>
                
@@ -88,9 +78,9 @@ import {
                     fullWidth
                     label="Description"
                     name="description"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
-                    defaultValue={values.description}
+                    defaultValue={formik.values.description}
                     multiline
                   />
   

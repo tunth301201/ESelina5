@@ -14,64 +14,57 @@ import {
   Radio
 } from '@mui/material';
 import { useFormik } from 'formik';
-import { getUserById, getUserProfile } from 'src/api/apiService';
+import { changPassword, getUserById, getUserProfile, updateProfile } from 'src/api/apiService';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers';
 
-const genders = [
-  {
-    value: 'male',
-    label: 'Male'
-  },
-  {
-    value: 'female',
-    label: 'Female'
-  }
-];
 
-export const AccountProfileDetails = () => {
-  // const [userProfile, setUserProfile] = useState(null);
-  // useEffect(() => {
-  //   getUserById("642185b90999692a58fa508b").then((res) => {
-  //     console.log("User Profile: "+res.data.firstname)
-  //     setUserProfile(res.data);
-  //   })
-  // },[])
+export const AccountProfileDetails = ({UserProfile}) => {
 
-
-
+  const userInfo = UserProfile;
+ 
   const formik = useFormik({
     initialValues: {
-      firstName: "Tu",
-      lastName: "Nguyen",
-      email: "tunth301201@gmail.com",
-      password: '',
-      passwordConfirm: '',
-      gender: "female",
-      birthday: new Date("30-12-2001"),
-      phone: "0352997187",
-      address: "151B, Can Tho",
+      firstName: userInfo.firstname,
+      lastName: userInfo.lastname,
+      email: userInfo.email,
+      oldPassword: '',
+      newPassword: '',
+      gender: userInfo.gender,
+      birthday: new Date(userInfo.birthday).getTime(),
+      phone: userInfo.phone,
+      address: userInfo.address,
       submit: null
     },
     onSubmit: async(values) => {
-      // console.log("formik value: ", values);
-      // try{
-      //   var createUserDto = {
-      //     email: values.email,
-      //     password: values.password,
-      //     firstname: values.firstName,
-      //     lastname: values.lastName,
-      //     gender: values.gender,
-      //     birthday: values.birthday.toString(),
-      //     phone: values.phone,
-      //     address: values.address,
-      //     role: "seller",
-      //   }
-      //   createUser(createUserDto);
-      // } catch(err) {
-        
-      // }
+      console.log("formik value: ", values);
+      try{
+        var updateUserDto = {
+          firstname: values.firstName,
+          lastname: values.lastName,
+          gender: values.gender,
+          birthday: values.birthday.toString(),
+          phone: values.phone,
+          address: values.address,
+        };
+        updateProfile(updateUserDto);
+      } catch(err) {
+        console.log(err);
+      }
+
+      if (values.oldPassword && values.newPassword) {
+        try{
+          var changePasswordDto = {
+            oldPassword: values.oldPassword,
+            newPassword: values.newPassword
+          };
+          console.log("passDTO: ", changePasswordDto)
+          changPassword(changePasswordDto);
+        } catch(err) {
+        console.log(err);
+        }
+      }
     }
   });
 
@@ -104,9 +97,9 @@ export const AccountProfileDetails = () => {
                     fullWidth
                     label="Email"
                     name="email"
-                    onChange={formik.handleChange}
                     required
                     value={formik.values.email}
+                    
                   />
                 </Grid>
                 <Grid
@@ -158,11 +151,11 @@ export const AccountProfileDetails = () => {
                 >
                   <TextField
                     fullWidth
-                    label="Password"
-                    name="password"
+                    label="Old Password"
+                    name="oldPassword"
                     type="password"
                     onChange={formik.handleChange}
-                    value={formik.values.password}
+                    value={formik.values.oldPassword}
                   />
                 </Grid>
 
@@ -172,11 +165,11 @@ export const AccountProfileDetails = () => {
                 >
                   <TextField
                     fullWidth
-                    label="Password (Confirm)"
-                    name="passwordConfirm"
+                    label="New Password"
+                    name="newPassword"
                     type="password"
                     onChange={formik.handleChange}
-                    value={formik.values.passwordConfirm}
+                    value={formik.values.newPassword}
                   />
                 </Grid>
                 
@@ -231,7 +224,7 @@ export const AccountProfileDetails = () => {
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">
+          <Button variant="contained" type="submit">
             Save details
           </Button>
         </CardActions>

@@ -25,7 +25,7 @@ import CreateProduct from 'src/sections/product/product-create';
 import UpdateProduct from 'src/sections/product/product-update';
 import ViewProduct from 'src/sections/product/product-view';
 import { format } from 'date-fns';
-import { getAllProducts, getAllCategories, getOneProduct  } from 'src/api/apiService';
+import { getAllProducts, getAllCategories, getOneProduct, checkExistProductInOrders, deleteOneProduct  } from 'src/api/apiService';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -78,6 +78,7 @@ const Page = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
+ 
 
  
   
@@ -92,7 +93,7 @@ const Page = () => {
       })
     })
     .catch(error => {
-      console.error("Error getting category:", error);
+      console.error("Error getting product:", error);
     });
   }, []);
 
@@ -189,6 +190,8 @@ const Page = () => {
       disableColumnMenu: true,
       renderCell: (params) => {
         const [anchorEl, setAnchorEl] = useState(null);
+        const [productInOrder, setProductInOrder] = useState(false);
+        
         const handleMenuOpen = (event) => {
           setAnchorEl(event.currentTarget);
         };
@@ -210,6 +213,14 @@ const Page = () => {
           setOpenEdit(true);
           handleMenuClose();
         };
+
+        useEffect(() => {
+            checkExistProductInOrders(params.row.id).then((res) => {
+                setProductInOrder(res.data);
+              })
+        },[params.row.id])
+        
+
         const handleDeleteClick = () => {
           const deleteProduct = {
             id: params.row.id,
@@ -238,7 +249,10 @@ const Page = () => {
             >
               <MenuItem onClick={handleViewClick}>View</MenuItem>
               <MenuItem onClick={handleEditClick}>Edit</MenuItem>
-              <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
+              {!productInOrder && (
+                <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
+              )}
+              
             </Menu>
           </div>
         );
@@ -283,13 +297,26 @@ const rows = products.map((item) => {
       updatedProducts[index] = {
         ...updatedProducts[index],
         name: values.name,
+        images: values.images,
         collection: values.collection,
         stock: values.stock,
         price: values.price,
         discount: values.discount,
       };
+
+      console.log("updated product: ", updatedProducts[index])
       return updatedProducts;
 })
+};
+
+const handleDeleteProductClick = (productId) => {
+  deleteOneProduct(productId).then((res) => {
+    handleDeleteClose();
+    setProducts(products.filter((product) => product._id !== productId));
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 };
 
 
@@ -453,7 +480,7 @@ const rows = products.map((item) => {
                 </DialogContent>
                 <DialogActions style={{ justifyContent: 'center' }}>
                   <Button onClick={handleDeleteClose}>No</Button>
-                  <Button autoFocus onClick={handleDeleteClose} variant="contained">
+                  <Button autoFocus onClick={handleDeleteProductClick.bind(null, selectedDeleteProduct?.id)} variant="contained">
                     Yes
                   </Button>
                 </DialogActions>

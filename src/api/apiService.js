@@ -49,6 +49,23 @@ import axios from 'axios';
       })
   }
 
+  export const deleteOneCategory = async (id) => {
+    return await axios.delete(`http://localhost:4000/category/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+      },
+    })
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+ 
+
 //================Product=============================
   export const getAllProducts = async () => {
     return await axios.get("http://localhost:4000/product")
@@ -61,7 +78,6 @@ import axios from 'axios';
   }
 
   export const getOneProduct = async (id) => {
-    console.log("get product id service: "+ id)
     return await axios.get(`http://localhost:4000/product/${id}`)
       .then(res => {
           return res;
@@ -71,22 +87,51 @@ import axios from 'axios';
       })
   }
 
+  export const deleteOneProduct = async (id) => {
+    return await axios.delete(`http://localhost:4000/product/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+      },
+    })
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
   
+  export const getProductsByCollectionId = async (tagId) => {
+    return await axios.get(`http://localhost:4000/product/tag/${tagId}`)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
 
-  // export const updateProduct = async (id, updateProductData) => {
-  //   return await axios.put(`http://localhost:4000/product/${id}`, updateProductData, config)
-  //     .then(res => {
-  //         return res;
-  //     })
-  //     .catch(err => {
-  //         console.log(err)
-  //     })
-  // }
 
 
   // ======================User =================
   export const getAllUsers = async () => {
     return await axios.get("http://localhost:4000/user", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+      },
+    })
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+  export const deleteOneUser = async (id) => {
+    return await axios.delete(`http://localhost:4000/user/${id}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
@@ -136,6 +181,21 @@ import axios from 'axios';
       })
   }
 
+  export const deleteOnePromotion = async (id) => {
+    return await axios.delete(`http://localhost:4000/promotion/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+      },
+    })
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
 // =========================User======================
 export const createUser = async (createUserDto) => {
   return await axios.post("http://localhost:4000/user", createUserDto, {
@@ -168,7 +228,37 @@ export const getUserById = async (id) => {
 }
 
 export const getUserProfile = async () => {
-  return await axios.get("http://localhost:4000/user/profile",{
+  return await axios.get(`http://localhost:4000/user/profile/${1}`,{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const updateProfile = async (updateUserDto) => {
+  return await axios.put("http://localhost:4000/user", updateUserDto, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const changPassword = async (changePasswordDto) => {
+  return await axios.put("http://localhost:4000/user/change-password", changePasswordDto, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
@@ -185,6 +275,52 @@ export const getUserProfile = async () => {
 // ================Order==============
 export const getAllOrders = async () => {
   return await axios.get(`http://localhost:4000/order`,{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const checkExistProductInOrders = async (id) => {
+  return await axios.get(`http://localhost:4000/order/check-exist-in-orders/${id}`,{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getOrderByOrderId = async (orderId) => {
+  return await axios.get(`http://localhost:4000/order/orderItems/${orderId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+
+export const updateOrderStatus = async (idOrder) => {
+  return await axios.put(`http://localhost:4000/order/updateOrderStatus/${idOrder}`, {}, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,

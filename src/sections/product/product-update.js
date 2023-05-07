@@ -11,6 +11,7 @@ import {
   import PropTypes from 'prop-types';
 import { getOneProduct } from 'src/api/apiService';
 import axios from 'axios';
+import { useFormik } from 'formik';
 
   
   const UpdateProduct = (props) => {
@@ -20,34 +21,18 @@ import axios from 'axios';
     const collections = Collection;
     const productDetail = Product;
 
-    const [values, setValues] = useState({
-      name: productDetail.name,
-      description: productDetail.description,
-      price: productDetail.price,
-      stock: productDetail.stock,
-      discount: productDetail.discount,
-      collection: productDetail.category_id,
-    });
-  
-    const handleChange = useCallback(
-      (event) => {
-        setValues((prevState) => ({
-          ...prevState,
-          [event.target.name]: event.target.value
-        }));
-      },
-      []
-    );
 
-    const [selectedCollection, setSelectedCollection] = useState(productDetail.category_id._id);
-    const handleSelectChange = (event) => {
-      setSelectedCollection(event.target.value);
-    };
-    const [updateProduct, setUpdateProduct] = useState(null);
-  
-    const handleSubmit = useCallback(
-      (event) => {
-        event.preventDefault();
+    const formik = useFormik({
+      initialValues: {
+        name: productDetail.name,
+        description: productDetail.description,
+        price: productDetail.price,
+        stock: productDetail.stock,
+        discount: productDetail.discount,
+        collection: productDetail.category_id._id,
+        files: []
+      },
+      onSubmit: async(values) => {
         try {
           const formData = new FormData();
           formData.append('name', values.name);
@@ -55,7 +40,10 @@ import axios from 'axios';
           formData.append('price', values.price);
           formData.append('stock', values.stock);
           formData.append('discount', values.discount);
-          formData.append('category_id', selectedCollection);
+          formData.append('category_id', values.collection);
+  
+          console.log("update values: ", values)
+  
           uploadedFiles.forEach((file) => {
             formData.append('file', file);
           })
@@ -64,18 +52,20 @@ import axios from 'axios';
           {headers: {
               'Content-Type': 'multipart/form-data',
             },}).then((res) => {
-                setUpdateProduct(res.data);
+              getOneProduct(res.data._id).then((res) => {
                 onSubmit(res.data);
-            
+                onSuccess(res.data);
+              })
+                
             });
-          // onSuccess();
-        } catch (e) {
-          console.log('Error creating product:', e);
+
+        } catch (err) {
+          console.log(err);
         }
-      },
-      [updateProduct, onSuccess]
-    );
+      }
+    });
   
+
     const UploadBox = styled(Box)({
       display: 'flex',
       flexDirection: 'column',
@@ -96,16 +86,12 @@ import axios from 'axios';
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const inputRef = useRef(null);
 
-    const handleFileChange = (event) => {
-      const files = event.target.files;
-      setUploadedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
-    };
   
     return (
       <form
         autoComplete="off"
         noValidate
-        onSubmit={handleSubmit}
+        onSubmit={formik.handleSubmit}
       >
         <Card>
           <CardHeader
@@ -127,9 +113,9 @@ import axios from 'axios';
                     helperText="Please specify the product name"
                     label="Name"
                     name="name"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
-                    value={values.name}
+                    value={formik.values.name}
                   />
                 </Grid>
                 <Grid
@@ -140,11 +126,11 @@ import axios from 'axios';
                     fullWidth
                     label="Collection"
                     name="collection"
-                    onChange={handleSelectChange}
+                    onChange={formik.handleChange}
                     required
                     select
                     SelectProps={{ native: true }}
-                    value={selectedCollection}
+                    value={formik.values.collection}
                   >
                     {collections.map((option) => (
                       <option
@@ -170,7 +156,11 @@ import axios from 'axios';
                                     id="upload-file"
                                     multiple
                                     type="file"
-                                    onChange={handleFileChange}
+                                    onChange={(event) => {
+                                      const files = event.target.files;
+                                      setUploadedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
+                                      formik.setFieldValue("files", files);
+                                    }}
                                     hidden
                                 />
                                 <Box sx={{ mt: 1 }}>
@@ -201,10 +191,10 @@ import axios from 'axios';
                     fullWidth
                     label="Description"
                     name="description"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
                     multiline
-                    value={values.description}
+                    value={formik.values.description}
                   />
   
                 </Grid>
@@ -216,10 +206,10 @@ import axios from 'axios';
                     fullWidth
                     label="Stock"
                     name="stock"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
                     type="number"
-                    value={values.stock}
+                    value={formik.values.stock}
                   />
                 </Grid>
                 <Grid
@@ -230,10 +220,10 @@ import axios from 'axios';
                     fullWidth
                     label="Price"
                     name="price"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
                     type="number"
-                    value={values.price}
+                    value={formik.values.price}
                   />
                 </Grid>
 
@@ -245,10 +235,10 @@ import axios from 'axios';
                     fullWidth
                     label="Discount"
                     name="discount"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
                     type="number"
-                    value={values.discount}
+                    value={formik.values.discount}
                   />
                 </Grid>
                 

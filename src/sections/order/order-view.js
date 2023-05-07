@@ -13,188 +13,303 @@ import {
     TableCell,
     Table
   } from '@mui/material';
-  import { useCallback, useRef } from 'react';
+  import { useCallback, useEffect, useRef, useState } from 'react';
   import PropTypes from 'prop-types';
-  
-  
-  const ViewOrderDetail = () => {
+import { getOneProduct, getOrderByOrderId } from 'src/api/apiService';
+import { width } from '@mui/system';
 
-    const columns = [
-        {field: 'name', headerName: 'Product Name', flex: 1},
-        {field: 'image', headerName: 'Image', flex: 1},
-        {field: 'price', headerName: 'Price', flex: 1},
-        {field: 'quantity', headerName: 'Qty', flex: 1},
-    ];
+  
+  const ViewOrderDetail = (props) => {
+    const {Order} = props;
+    const [orderDetail, setOrderDetail] = useState(null);
+    const [orderItems, setOrderItems] = useState([]);
+    useEffect(() => {
+        getOrderByOrderId(Order).then(async (res) => {
+            setOrderDetail(res.data);
+            const {order_items} = res.data;
+            const updatedOrderItems = [];
 
-    const rows = [
-        {id: "1", name: "Product 1", image: "Image 1", price: 225, quantity: 2},
-        {id: "2", name: "Product 2", image: "Image 2", price: 225, quantity: 2},
-        {id: "3", name: "Product 3", image: "Image 3", price: 225, quantity: 2},
-    ];
+            for (const orderItem of order_items) {
+                await getOneProduct(orderItem.product_id).then((res) => {
+                    updatedOrderItems.push({
+                        productDetail: res.data,
+                        quantity: orderItem.quantity
+                    });
+                });
+            }
+            setOrderItems(updatedOrderItems);
+        })
+    }, []);
+
+    function formatDateTimeDislay(inputString) {
+        // Convert input string to JavaScript Date object
+        var date = new Date(inputString);
+      
+        // Extract individual components (year, month, day, hours, minutes, seconds) from the Date object
+        var year = date.getFullYear();
+        var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed, so we add 1 and pad with leading zero
+        var day = ("0" + date.getDate()).slice(-2); // Pad with leading zero
+        var hours = ("0" + date.getHours()).slice(-2); // Pad with leading zero
+        var minutes = ("0" + date.getMinutes()).slice(-2); // Pad with leading zero
+        var seconds = ("0" + date.getSeconds()).slice(-2); // Pad with leading zero
+      
+        // Format the date and time components into a user-friendly string
+        var formattedDateTime = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+      
+        // Return the formatted date and time string
+        return formattedDateTime;
+      }
+
   
     return (
+        
       <form
         autoComplete="off"
         noValidate
       >
-        <Card>
-          <CardHeader
-            title="Order Detail"
-          />
-          <CardContent sx={{ pt: 0 }}>
-            <Box sx={{ m: -1.5 }}>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                xs={12}
-                md={12}
-                >
-                    <Box sx={{ border: 1, borderRadius:1, padding: 2, borderColor: 'grey.300'  }}>
-                        <TextField
+        {orderDetail? <Box sx={{ px:2 }}>
+                    {/* Order information */}
+                    <Grid
+                    item
+                    xs={12}
+                    sm={12}>
+                    <Card sx={{ borderRadius: 2, py: 1.5, px: 2 }}>
+                        <Typography variant="h6" sx={{px: 2}}>
+                        Order Information
+                        </Typography>
+                        <Divider sx={{ my: 2 }} />
+
+                        <Grid container>
+                        <Grid
+                        xs={12}
+                        md={4}>
+                            <TextField
                             fullWidth
                             label="Order ID"
                             name="orderID"
-                            value="DEV133"
+                            value={orderDetail.order_number}
                             InputProps={{
-                                readOnly: true
-                              }}
+                                readOnly: true,
+                                }}
                             />
-                            <Divider/>
-                        <TextField
+                        </Grid>
+
+                        <Grid
+                        xs={12}
+                        md={4}>
+                            <TextField
                             fullWidth
                             label="Placed on"
                             name="placedOn"
-                            value="03/23/2023"
+                            value={formatDateTimeDislay(orderDetail.createdAt)}
                             InputProps={{
                                 readOnly: true
-                              }}
+                            }}
                             />
-                            <Divider/>
-                        <TextField
+                        </Grid>
+
+                        <Grid
+                        xs={12}
+                        md={4}>
+                            <TextField
                             fullWidth
                             label="Order Status"
                             name="orderStatus"
-                            value="Pending"
+                            value={orderDetail.order_status}
                             InputProps={{
                                 readOnly: true
-                              }}
+                            }}
                             />
-                            <Divider/>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
+                        </Grid>
+                        </Grid>
+                        <Table sx={{ marginTop: 2 }}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>
+                                    Name
+                                </TableCell>
+                                <TableCell>
+                                    Image
+                                </TableCell>
+                                <TableCell>
+                                    Price
+                                </TableCell>
+                                <TableCell>
+                                    Qty
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {orderItems?.map((item) => {
+                                return (
+                                    <TableRow
+                                    hover
+                                    key={item.productDetail._id}
+                                    >
                                         <TableCell>
-                                            Name
+                                            {item.productDetail.name}
                                         </TableCell>
                                         <TableCell>
-                                            Image
+                                            <img
+                                                class=" w-[10px] h-[10px] object-cover rounded-2xl"
+                                                src={`data:${item.productDetail.images[0].contentType};base64,${item.productDetail.images[0].data}`}
+                                                alt="product"
+                                                style={{ width: '100px', height: '100px', padding: '5px' }}
+                                            />
                                         </TableCell>
                                         <TableCell>
-                                            Price
+                                            {item.productDetail.discount}
                                         </TableCell>
                                         <TableCell>
-                                            Qty
+                                            {item.quantity}
                                         </TableCell>
                                     </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {rows.map((item) => {
-                                        return (
-                                            <TableRow
-                                            hover
-                                            key={item.id}
-                                            >
-                                                <TableCell>
-                                                    {item.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.image}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.price}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.quantity}
-                                                </TableCell>
-                                            </TableRow>
-                                        )
-                                    })}
-                                </TableBody>
-                            </Table>
-                        
-                    </Box>
-                </Grid>
+                                )
+                            })}
+                        </TableBody>
+                    </Table>
 
-                <Grid
-                xs={12}
-                md={6}
-                >
-                    <Box sx={{ border: 1, borderRadius: 1, padding: 1, borderColor: 'grey.300'  }}>
-                        <TextField
-                                fullWidth
-                                label="Shipping Address"
-                                name="shippingAddress"
-                                value="fnkasnlanvca"
-                                multiline
-                                InputProps={{
-                                    readOnly: true
-                                }}
-                                />
-                        <Divider/>
-                        <TextField
+                    </Card>
+                    </Grid>
+
+                    {/* Delivery information */}
+                    <Grid
+                    item
+                    xs={12}
+                    sm={12}>
+                    <Card sx={{ borderRadius: 2, py: 1.5, px: 2 }}>
+                        <Typography variant="h6" sx={{px: 2}}>
+                            Delivery information
+                        </Typography>
+
+                        <Divider sx={{ my: 2 }} />
+                        
+                        <Grid container>
+                        <Grid
+                            xs={12}
+                            md={6}
+                        >
+                            <TextField
                             fullWidth
-                            label="Customer's Note"
-                            name="note"
-                            value="kabksjabk"
-                            multiline
+                            label="Name"
+                            name="name"
+                            value={orderDetail.user_id.firstname + " " + orderDetail.user_id.lastname}
+                            InputProps={{
+                            readOnly: true
+                            }}
+                        />
+                        </Grid>
+
+                        <Grid
+                            xs={12}
+                            md={6}
+                        >
+                            <TextField
+                            fullWidth
+                            label="Phone"
+                            name="phone"
+                            value={orderDetail.delivery_phone}
+                            InputProps={{
+                            readOnly: true
+                            }}
+                        />
+                        </Grid>
+
+                        <Grid
+                        xs={12}
+                        md={12}>
+                            <TextField
+                            fullWidth
+                            label="Delivery Address"
+                            name="address"
+                            value={orderDetail.delivery_address}
+                            InputProps={{
+                            readOnly: true
+                            }}
+                        />
+                        </Grid>
+
+                        <Grid
+                        xs={12}
+                        md={6}>
+                            <TextField
+                            fullWidth
+                            label="Delivery Unit"
+                            name="carrier"
+                            value={orderDetail.carrier}
                             InputProps={{
                                 readOnly: true
-                              }}
-                            />
-                    </Box>
-                </Grid>
+                            }}
+                            >
+                            </TextField>
+                        </Grid>
 
+                        <Grid
+                        xs={12}
+                        md={6}>
+                            <TextField
+                            fullWidth
+                            label="Payment Method"
+                            name="paymentMethod"
+                            value="Cash On Delivery"
+                            InputProps={{
+                            readOnly: true
+                            }}
+                        />
+                        </Grid>
+                        </Grid>
+                    </Card>
+                    </Grid>
+                    
+             
+
+                {/* Total Price */}
                 <Grid
+                item
                 xs={12}
-                md={6}
-                >
-                    <Box sx={{ border: 1, borderRadius: 1, padding: 1, borderColor: 'grey.300' }}>
-                        <Typography
-                        variant="subtitle1">
-                            Total Price
-                        </Typography>
-                        <Typography
-                        color="text.secondary"
-                        variant="subtitle2">
-                            Subtotal: $2226 
-                        </Typography>
-                        <Typography
-                        color="text.secondary"
-                        variant="subtitle2">
-                            Shipping fee: $2226 
-                        </Typography>
-                        <Divider border={1}/>
-                        <Typography
-                        variant="subtitle1">
-                            Total: $2226 
-                        </Typography>
-                        <Typography
-                        color="text.secondary"
-                        variant="subtitle2">
-                            Pay by Cash
-                        </Typography>
-                    </Box>
+                sm={12}>
+                    <Card sx={{ borderRadius: 2, py: 1.5, px: 2 }}>
+                    <Typography variant="h6" sx={{px: 2}}>
+                        Total Price
+                    </Typography>
+
+                    <Divider sx={{ my: 2 }} />
+                
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography color="text.secondary" variant="subtitle2">SubTotal:</Typography>
+                        <Typography variant="h7">+ $145</Typography>
+                        </Box>
+
+                        <Box display="flex" justifyContent="space-between" alignItems="center" padding="0px 0 10px 0">
+                        <Typography color="text.secondary" variant="subtitle2">Discount:</Typography>
+                        <Typography variant="h7">- $25</Typography>
+                        </Box>
+
+                        <Box display="flex" justifyContent="space-between" alignItems="center" padding="0px 0 10px 0">
+                        <Typography color="text.secondary" variant="subtitle2">Shipping fee:</Typography>
+                        <Typography variant="h7">+ $25</Typography>
+                        </Box>
+
+                        <Divider />
+
+                        <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px 0 10px 0">
+                        <Typography color="text.secondary" variant="subtitle1">Total:</Typography>
+                        <Typography color="red" variant="h6">${orderDetail.total_price}</Typography>
+                        </Box>
+
+                    </Card>
                 </Grid>
                 
-              </Grid>
-            </Box>
-          </CardContent>
-        </Card>
+            </Box>: ""}
+            
+          
+      
       </form>
     );
   };
-  
+
+  ViewOrderDetail.propTypes = {
+    Order: PropTypes.object,
+  };
   export default ViewOrderDetail;
   

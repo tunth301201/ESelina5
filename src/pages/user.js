@@ -26,7 +26,7 @@ import CreateUser from 'src/sections/user/user-create';
 import UpdateUser from 'src/sections/user/user-update';
 import ViewUser from 'src/sections/user/user-view';
 import { format } from 'date-fns';
-import { getAllUsers, getUserById } from 'src/api/apiService';
+import { deleteOneUser, getAllUsers, getUserById } from 'src/api/apiService';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -131,6 +131,16 @@ const Page = () => {
     return formattedDateTime;
   }
 
+  const handleDeleteUserClick = (userId) => {
+    deleteOneUser(userId).then((res) => {
+      handleDeleteClose();
+      setUsers(users.filter((user) => user._id !== userId));
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+  }
+
 
   const columns = [
     { 
@@ -191,14 +201,7 @@ const Page = () => {
           setOpenView(true);
           handleMenuClose();
         };
-        const handleEditClick = () => {
-          const editUser = {
-            id: params.row.id,
-          };
-          setSelectedEditUser(editUser);
-          setOpenEdit(true);
-          handleMenuClose();
-        };
+        
         const handleDeleteClick = () => {
           const deleteUser = {
             id: params.row.id,
@@ -227,14 +230,13 @@ const Page = () => {
               onClose={handleMenuClose}
             >
               <MenuItem onClick={handleViewClick}>View</MenuItem>
-              {params.row.role === "Seller" ? (<MenuItem onClick={handleEditClick}>Edit</MenuItem>):null}
               <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
             </Menu>
           </div>
         );
       },
     },
-  ];
+  ]; 
 
   const [sortModel, setSortModel] = useState([
     {
@@ -258,6 +260,11 @@ const rows = users.map((item) => {
       createdAt: item.createdAt,
     };
   });
+
+  const handleCreateNewUser = (values) => {
+    users.push(values);
+    setUsers([...users]);
+  }
 
 
   return (
@@ -364,35 +371,13 @@ const rows = users.map((item) => {
               aria-labelledby="customized-dialog-title"
               open={open}
             >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                Add New User
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
-                <CreateUser />
-              {/* </DialogContent> */}
-            
+                <CreateUser 
+                onSuccess={() => handleClose()}
+                onSubmit={handleCreateNewUser}
+                />
             </BootstrapDialog>
           </div>
           {/* Create User Dialog end */}
-
-          {/* Edit User Dialog start */}
-          <div>
-            <BootstrapDialog
-              onClose={handleEditClose}
-              aria-labelledby="customized-dialog-title"
-              open={openEdit}
-            >
-              {/* <BootstrapDialogTitle id="customized-dialog-title" onClose={handleEditClose}>
-                Update User
-              </BootstrapDialogTitle> */}
-              {/* <DialogContent dividers> */}
-               <UpdateUser />
-                 {/* User={selectedEditUser}
-                
-              {/* </DialogContent> */}
-            </BootstrapDialog>
-          </div>
-          {/* Edit User Dialog end */}
 
           {/* View User Dialog start */}
           <div>
@@ -420,7 +405,7 @@ const rows = users.map((item) => {
                 </DialogContent>
                 <DialogActions style={{ justifyContent: 'center' }}>
                   <Button onClick={handleDeleteClose}>No</Button>
-                  <Button autoFocus onClick={handleDeleteClose} variant="contained">
+                  <Button autoFocus onClick={handleDeleteUserClick.bind(null,selectedDeleteUser?.id)} variant="contained">
                     Yes
                   </Button>
                 </DialogActions>

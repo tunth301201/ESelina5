@@ -21,7 +21,7 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Head from 'next/head';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import { getAllCategories } from 'src/api/apiService';
+import { deleteOneCategory, getAllCategories, getOneProduct, getProductsByCollectionId } from 'src/api/apiService';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import CreateCollection from 'src/sections/collection/collection-create';
 import UpdateCollection from 'src/sections/collection/collection-update';
@@ -120,6 +120,16 @@ const Page = () => {
   })
   };
 
+  const handleDeleteCollectionClick = (collectionId) => {
+    deleteOneCategory(collectionId).then((res) => {
+      handleDeleteClose();
+      setCollections(collections.filter((collection) => collection._id !== collectionId));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }
+
 
   function formatDateTimeDislay(inputString) {
     // Convert input string to JavaScript Date object
@@ -170,6 +180,8 @@ const Page = () => {
       disableColumnMenu: true,
       renderCell: (params) => {
         const [anchorEl, setAnchorEl] = useState(null);
+        const [productsInCollection, setProductsInCollection] = useState(false);
+
         const handleMenuOpen = (event) => {
           setAnchorEl(event.currentTarget);
         };
@@ -186,6 +198,15 @@ const Page = () => {
           setOpenEdit(true);
           handleMenuClose();
         };
+
+        useEffect(() => {
+          getProductsByCollectionId(params.row.id).then((res) =>{
+            if (res.data.length > 0) {
+              setProductsInCollection(true);
+            }
+          });
+        }, [params.row.id])
+
         const handleDeleteClick = () => {
           const deleteCollection = {
             id: params.row.id,
@@ -214,7 +235,9 @@ const Page = () => {
               onClose={handleMenuClose}
             >
               <MenuItem onClick={handleEditClick}>Edit</MenuItem>
-              <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
+              {!productsInCollection && (
+                <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
+              )}
             </Menu>
           </div>
         );
@@ -391,7 +414,7 @@ const rows = collections.map((item) => {
                 </DialogContent>
                 <DialogActions style={{ justifyContent: 'center' }}>
                   <Button onClick={handleDeleteClose}>No</Button>
-                  <Button autoFocus onClick={handleDeleteClose} variant="contained">
+                  <Button autoFocus onClick={handleDeleteCollectionClick.bind(null, selectedDeleteCollection?.id)} variant="contained">
                     Yes
                   </Button>
                 </DialogActions>

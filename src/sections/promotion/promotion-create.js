@@ -16,6 +16,9 @@ import { format } from 'date-fns';
 import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import PropTypes from 'prop-types';
 import { createPromotion } from 'src/api/apiService';
+import { useFormik } from 'formik';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
   
   const CreatePromotion = (props) => {
     const { Product, onSuccess, onSubmit } = props;
@@ -23,23 +26,42 @@ import { createPromotion } from 'src/api/apiService';
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
 
-    const [values, setValues] = useState({
-      name: "",
-      description: "",
-      discount: 0,
-      start_date: Date.now(),
-      end_date: Date.now(),
-    });
-  
-    const handleChange = useCallback(
-      (event) => {
-        setValues((prevState) => ({
-          ...prevState,
-          [event.target.name]: event.target.value
-        }));
+    const formik = useFormik({
+      initialValues: {
+        name: "",
+        description: "",
+        discount: 0,
+        start_date: Date.now(),
+        end_date: Date.now(),
+        submit: null
       },
-      []
-    );
+      onSubmit: async(values) => {
+        try {
+          const newPromotion = {
+            name: values.name,
+            description: values.description,
+            discount: values.discount,
+            start_date: values.start_date,
+            end_date: values.end_date,
+            products: selectedRows.map(p => p.id),
+          };
+          console.log(startDate)
+          console.log(endDate)
+          console.log(newPromotion)
+
+          createPromotion(newPromotion).then((res) => {
+            onSubmit(res.data);
+            onSuccess(res.data);
+          });
+          
+        } catch (e) {
+          console.log('Error creating promotion:', e);
+        }
+      }
+    });
+
+    
+  
 
 
     const columns = [
@@ -97,32 +119,6 @@ import { createPromotion } from 'src/api/apiService';
       setEndDate(value);
     };
 
-    const handleSubmit = useCallback(
-      (event) => {
-        event.preventDefault();
-        try {
-          const newPromotion = {
-            name: values.name,
-            description: values.description,
-            discount: values.discount,
-            start_date: startDate,
-            end_date: endDate,
-            products: selectedRows.map(p => p.id),
-          };
-          console.log(startDate)
-          console.log(endDate)
-          console.log(newPromotion)
-
-          createPromotion(newPromotion).then((res) => {
-            onSubmit(res.data);
-          });
-          onSuccess();
-        } catch (e) {
-          console.log('Error creating promotion:', e);
-        }
-      },
-      [values, onSuccess]
-    );
   
 
  
@@ -130,7 +126,7 @@ import { createPromotion } from 'src/api/apiService';
       <form
         autoComplete="off"
         noValidate
-        onSubmit={handleSubmit}
+        onSubmit={formik.handleSubmit}
         
       >
         <Card>
@@ -152,9 +148,9 @@ import { createPromotion } from 'src/api/apiService';
                     fullWidth
                     label="Name"
                     name="name"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
-                    value={values.name}
+                    value={formik.values.name}
                   />
                 </Grid>
                 
@@ -166,10 +162,10 @@ import { createPromotion } from 'src/api/apiService';
                     fullWidth
                     label="Description"
                     name="description"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
                     multiline
-                    value={values.description}
+                    value={formik.values.description}
                   />
   
                 </Grid>
@@ -182,10 +178,10 @@ import { createPromotion } from 'src/api/apiService';
                     fullWidth
                     label="Discount (%)"
                     name="discount"
-                    onChange={handleChange}
+                    onChange={formik.handleChange}
                     required
                     type="number"
-                    value={values.discount}
+                    value={formik.values.discount}
                   />
   
                 </Grid>
@@ -194,18 +190,19 @@ import { createPromotion } from 'src/api/apiService';
                   xs={12}
                   md={6}
                 >
-                  <TextField
-                    fullWidth
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker 
+                    disableFuture
                     label="Start Date"
-                    name="startDate"
-                    value={startDate}
-                    onChange={handleStartDateChange}
-                    required
-                    type="datetime-local"
-                    InputLabelProps={{
-                      shrink: true,
+                    openTo="year"
+                    views={['year', 'month', 'day']}
+                    value={formik.values.start_date}
+                    onChange={(value) => {
+                      formik.setFieldValue('start_date', Date.parse(value));
                     }}
-                  />
+                    renderInput={(params) => <TextField {...params} style={{ width: "100%" }} />}
+                    />
+                  </LocalizationProvider>
                                   
                 </Grid>
 
@@ -213,18 +210,19 @@ import { createPromotion } from 'src/api/apiService';
                   xs={12}
                   md={6}
                 >
-                  <TextField
-                    fullWidth
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker 
+                    disableFuture
                     label="End Date"
-                    name="endDate"
-                    value={endDate}
-                    onChange={handleEndDateChange}
-                    required
-                    type="datetime-local"
-                    InputLabelProps={{
-                      shrink: true,
+                    openTo="year"
+                    views={['year', 'month', 'day']}
+                    value={formik.values.end_date}
+                    onChange={(value) => {
+                      formik.setFieldValue('end_date', Date.parse(value));
                     }}
-                  />
+                    renderInput={(params) => <TextField {...params} style={{ width: "100%" }} />}
+                    />
+                  </LocalizationProvider>
                                   
                 </Grid>
 

@@ -53,7 +53,6 @@ import {
       ];
     
       const products = Product.filter(product => Promotion.products.includes(product._id));
-      console.log(products)
 
       const rows = products.map((item) => {
         return {

@@ -11,9 +11,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useCallback, useState } from 'react';
 import { useFormik } from 'formik';
 import { createUser } from 'src/api/apiService';
+   
   
-  
-  const CreateUser = () => {
+  const CreateUser = ({ onSuccess, onSubmit }) => {
+
     const formik = useFormik({
       initialValues: {
         firstName: '',
@@ -28,7 +29,6 @@ import { createUser } from 'src/api/apiService';
         submit: null
       },
       onSubmit: async(values) => {
-        console.log("formik value: ", values);
         try{
           var createUserDto = {
             email: values.email,
@@ -41,41 +41,17 @@ import { createUser } from 'src/api/apiService';
             address: values.address,
             role: "seller",
           }
-          createUser(createUserDto);
+          createUser(createUserDto).then((res) => {
+            onSubmit(res.data);
+            onSuccess(res.data);
+          });
         } catch(err) {
-          
+          console.log(err);
         }
       }
     });
 
-    // const [values, setValues] = useState({
-    //   firstName: '',
-    //   lastName: '',
-    //   email: '',
-    //   password: '',
-    //   passwordConfirm: '',
-    //   gender: 'female',
-    //   birthday: Date.now(),
-    //   phone: '',
-    //   address: ''
-    // });
-  
-    // const handleChange = useCallback(
-    //   (event) => {
-    //     setValues((prevState) => ({
-    //       ...prevState,
-    //       [event.target.name]: event.target.value
-    //     }));
-    //   },
-    //   []
-    // );
-  
-    // const handleSubmit = useCallback(
-    //   (event) => {
-    //     event.preventDefault();
-    //   },
-    //   []
-    // );
+    
   
   
     return (

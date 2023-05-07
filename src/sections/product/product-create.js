@@ -11,45 +11,30 @@ import {
   styled
 } from '@mui/material';
 import axios from 'axios';
+import { useFormik } from 'formik';
 import PropTypes from 'prop-types';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { getOneProduct } from 'src/api/apiService';
 
 
 const CreateProduct = (props) => {
   const { Collection, onSuccess, onSubmit } = props;
 
   const collections = Collection;
-  const [values, setValues] = useState({
-    name: '',
-    description: '',
-    price: 0,
-    stock: 0,
-    discount: 0,
-    collection: collections[0]._id,
-  });
 
   const [newProduct, setNewProduct] = useState(null);
 
-  const handleChange = useCallback(
-    (event) => {
-      setValues((prevState) => ({
-        ...prevState,
-        [event.target.name]: event.target.value
-      }));
+  const formik = useFormik({
+    initialValues: {
+      name: '',
+      description: '',
+      price: 0,
+      stock: 0,
+      discount: 0,
+      collection: collections[0]._id,
+      files: []
     },
-    []
-  );
-
-  const [selectedCollection, setSelectedCollection] = useState(collections[0]._id);
-
-  const handleSelectChange = (event) => {
-    setSelectedCollection(event.target.value);
-  };
-
-
-  const handleSubmit = useCallback(
-    (event) => {
-      event.preventDefault();
+    onSubmit: async(values) => {
       try {
         const formData = new FormData();
         formData.append('name', values.name);
@@ -57,38 +42,34 @@ const CreateProduct = (props) => {
         formData.append('price', values.price);
         formData.append('stock', values.stock);
         formData.append('discount', values.discount);
-        formData.append('category_id', selectedCollection);
+        formData.append('category_id', values.collection);
 
-        console.log("uploaded file in form data: ", uploadedFiles)
+        console.log("uploaded file: ", uploadedFiles)
 
         uploadedFiles.forEach((file) => {
           formData.append('file', file);
         })
-
-        // console.log("name: ", values.name);
-        // console.log("description: ", values.description);
-        // console.log("price: ", values.price);
-        // console.log("stock: ", values.stock);
-        // console.log("discount: ", values.discount);
-        console.log("category_id: ", selectedCollection);
-        
-       
 
         axios.post("http://localhost:4000/product/upload", formData,
         {headers: {
             'Content-Type': 'multipart/form-data',
           },}).then((res) => {
               setNewProduct(res.data);
-            onSubmit(res.data);
-           
+              getOneProduct(res.data._id).then((res) => {
+                onSubmit(res.data);
+                onSuccess(newProduct);
+              })
+            
           });
-          onSuccess();
-      } catch (e) {
-        console.log('Error creating product:', e);
+
+      } catch (err) {
+        console.log(err);
       }
-    },
-    [newProduct, onSuccess]
-  );
+    }
+  });
+
+
+
 
   const UploadBox = styled(Box)({
     display: 'flex',
@@ -111,17 +92,12 @@ const CreateProduct = (props) => {
 
   const inputRef = useRef(null);
 
-  const handleFileChange = (event) => {
-    const files = event.target.files;
-    setUploadedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
-  };
 
-  
   return (
     <form
       autoComplete="off"
       noValidate
-      onSubmit={handleSubmit}
+      onSubmit={formik.handleSubmit}
     >
       <Card>
         <CardHeader
@@ -143,9 +119,9 @@ const CreateProduct = (props) => {
                   helperText="Please specify the product name"
                   label="Name"
                   name="name"
-                  onChange={handleChange}
+                  onChange={formik.handleChange}
                   required
-                  value={values.name}
+                  value={formik.values.name}
                 />
               </Grid>
               <Grid
@@ -158,9 +134,9 @@ const CreateProduct = (props) => {
                   name="collection"
                   required
                   select
-                  onChange={handleSelectChange}
+                  onChange={formik.handleChange}
                   SelectProps={{ native: true }}
-                  value={selectedCollection}
+                  value={formik.values.collection}
                 >
                   {collections.map((option) => (
                     <option
@@ -186,7 +162,12 @@ const CreateProduct = (props) => {
                                 id="upload-file"
                                 multiple
                                 type="file"
-                                onChange={handleFileChange}
+                                onChange={(event) => {
+                                  const files = event.target.files;
+                                  setUploadedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
+                                  
+                                  formik.setFieldValue("files", files);
+                                }}
                                 hidden
                             />
                             <Box sx={{ mt: 1 }}>
@@ -217,10 +198,10 @@ const CreateProduct = (props) => {
                   fullWidth
                   label="Description"
                   name="description"
-                  onChange={handleChange}
+                  onChange={formik.handleChange}
                   required
                   multiline
-                  value={values.description}
+                  value={formik.values.description}
                 />
 
               </Grid>
@@ -232,10 +213,10 @@ const CreateProduct = (props) => {
                   fullWidth
                   label="Stock"
                   name="stock"
-                  onChange={handleChange}
+                  onChange={formik.handleChange}
                   required
                   type="number"
-                  value={values.stock}
+                  value={formik.values.stock}
                 />
               </Grid>
               <Grid
@@ -246,10 +227,10 @@ const CreateProduct = (props) => {
                   fullWidth
                   label="Price"
                   name="price"
-                  onChange={handleChange}
+                  onChange={formik.handleChange}
                   required
                   type="number"
-                  value={values.price}
+                  value={formik.values.price}
                 />
               </Grid>
               <Grid
@@ -260,10 +241,10 @@ const CreateProduct = (props) => {
                   fullWidth
                   label="Discount"
                   name="discount"
-                  onChange={handleChange}
+                  onChange={formik.handleChange}
                   required
                   type="number"
-                  value={values.discount}
+                  value={formik.values.discount}
                 />
               </Grid>
               

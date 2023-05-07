@@ -25,7 +25,7 @@ import CreatePromotion from 'src/sections/promotion/promotion-create';
 import UpdatePromotion from 'src/sections/promotion/promotion-update';
 import ViewPromotion from 'src/sections/promotion/promotion-view';
 import { format } from 'date-fns';
-import { getAllProducts, getAllPromorions, getOnePromotion } from 'src/api/apiService';
+import { deleteOnePromotion, getAllProducts, getAllPromorions, getOnePromotion } from 'src/api/apiService';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -191,14 +191,6 @@ const Page = () => {
           setOpenView(true);
           handleMenuClose();
         };
-        const handleEditClick = () => {
-          const editPromotion = {
-            id: params.row.id,
-          };
-          setSelectedEditPromotion(editPromotion);
-          setOpenEdit(true);
-          handleMenuClose();
-        };
         const handleDeleteClick = () => {
           const deletePromotion = {
             id: params.row.id,
@@ -249,6 +241,16 @@ const Page = () => {
     promotions.push(values);
     setPromotions([...promotions]);
   };
+
+  const handleDeletePromotionClick = (promotionId) => {
+    deleteOnePromotion(promotionId).then((res) => {
+      handleDeleteClose();
+      setPromotions(promotions.filter((promotion) => promotion._id !== promotionId));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }
 
 const rows = promotions.map((item) => {
     return {
@@ -426,7 +428,7 @@ const rows = promotions.map((item) => {
                 </DialogContent>
                 <DialogActions style={{ justifyContent: 'center' }}>
                   <Button onClick={handleDeleteClose}>No</Button>
-                  <Button autoFocus onClick={handleDeleteClose} variant="contained">
+                  <Button autoFocus onClick={handleDeletePromotionClick.bind(null, selectedDeletePromotion?.id)} variant="contained">
                     Yes
                   </Button>
                 </DialogActions>
