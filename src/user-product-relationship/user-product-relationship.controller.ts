@@ -22,9 +22,21 @@ export class UserProductRelationshipController {
         return await this.userProductRelationshipService.getRecommendationProduct(req.user.sub);
     }
 
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Get('/all')
+    @Roles('customer')
+    async getAllProductsByUserFiltering(@Request() req:any){
+        return await this.userProductRelationshipService.getAllRecommendationProduct(req.user.sub);
+    }
+
     @Get('/rating/:productId')
     async getProductRating(@Param('productId') productId: string){
         return await this.userProductRelationshipService.calculateProductRating(productId);
+    }
+
+    @Get('/user-rating/:userId/:productId')
+    async getRatingProductByUserId(@Param('userId') userId: string, @Param('productId') productId: string){
+        return await this.userProductRelationshipService.getUserProductRating(userId, productId);
     }
 
 

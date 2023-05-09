@@ -27,6 +27,11 @@ export class ProductController {
     return await this.productService.getAllProducts();
   }
 
+  @Get('/five-products')
+  async getFiveProducts() {
+    return await this.productService.getFiveProducts();
+  }
+
   @Get(':id')
   async getOneProduct(@Param('id') id: string) {
     return await this.productService.getOneProduct(id);
@@ -102,8 +107,6 @@ export class ProductController {
   @Put('/:id') 
   @UseInterceptors(FilesInterceptor('file', 10, { dest: './uploads' }))
   async updateProduct(@Param('id') id: string, @Body() updateProductDto, @UploadedFiles() files) {
-    console.log("updateProductDto: ", updateProductDto);
-    console.log("files: ", files)
     const { name, description, price, stock, discount, category_id } = updateProductDto;
     
     const imageBuffers = await Promise.all(
@@ -151,7 +154,7 @@ export class ProductController {
     return await this.productService.deleteProduct(id);
   }
 
-  @Get('/search')
+  @Get('/product/search')
     async searchProduct(@Query('keyword') keyword: string){
         return await this.productService.searchProduct(keyword);
     }

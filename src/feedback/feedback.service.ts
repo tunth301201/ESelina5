@@ -11,15 +11,26 @@ export class FeedbackService {
     ){}
 
     async getAllFeedbackByProductId(productId: string): Promise<Feedback[]> {
-        return await this.feedbackModel.find({product_id: productId});
+        return await this.feedbackModel.find({product_id: productId}).populate('user_id');
+    }
+
+    async getOneFeedbackById(feedbackId: string): Promise<Feedback> {
+        return await this.feedbackModel.findById(feedbackId).populate('user_id');
     }
 
     async sendFeedback( newFeedback: string, userId: string, productId: string): Promise<Feedback>{
-        const feedback = new this.feedbackModel({
-            feedback_content: newFeedback,
-            user_id: userId,
-            product_id: productId,
-        });
+        let feedback = await this.feedbackModel.findOne({user_id: userId, product_id: productId});
+        if (feedback) {
+            feedback.feedback_content = newFeedback;
+        }
+        else {
+            feedback = new this.feedbackModel({
+                feedback_content: newFeedback,
+                user_id: userId,
+                product_id: productId,
+            });
+        }
+        
         return await feedback.save();
     }
 

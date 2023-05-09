@@ -78,7 +78,7 @@ export class UserProductRelationshipService {
         userSimilarities.sort((a, b) => b.similarity_score - a.similarity_score);
         const topKUsers = userSimilarities.slice(0, k);
 
-        const productRatings = new Map<string, number>();
+        const productRatings = new Map<string, number>(); 
         for (const rating of userRatings) {
             const productId = rating.product_id;
             const ratingValue = rating.rating;
@@ -121,11 +121,67 @@ export class UserProductRelationshipService {
         // const n = 10;
         const recommendedProducts = Array.from(predictedRatings.entries())
             .sort((a, b) => b[1] - a[1])
-            // .slice(0, n)
+            .slice(0, 5)
             .map(([productId]) => allProducts.find(product => product.id === productId));
         
         return recommendedProducts;
     }
+
+    async getAllRecommendationProduct(userId: string): Promise<Product[]>{
+      const k = 5;
+      const userRatings = await this.userProductRelationshipModel.find({user_id:userId});
+      const allProducts = await this.productService.getAllProducts();
+      const userSimilarities = await this.userProductSimilarityService.calculateUserSimilarities(userId);
+      userSimilarities.sort((a, b) => b.similarity_score - a.similarity_score);
+      const topKUsers = userSimilarities.slice(0, k);
+
+      const productRatings = new Map<string, number>(); 
+      for (const rating of userRatings) {
+          const productId = rating.product_id;
+          const ratingValue = rating.rating;
+          if (productRatings.has(productId.toString())) {
+              const currentValue = productRatings.get(productId.toString());
+              productRatings.set(productId.toString(), currentValue + ratingValue);
+          } else {
+              productRatings.set(productId.toString(), ratingValue);
+          }
+      }
+
+      for (const productId of productRatings.keys()) {
+          const ratingSum = productRatings.get(productId);
+          const ratingCount = userRatings.filter(rating => rating.product_id.toString() === productId).length;
+          productRatings.set(productId, ratingSum / ratingCount);
+        }
+      
+      const predictedRatings = new Map<string, number>();
+      for (const product of allProducts) {
+          const productId = product.id;
+          if (!productRatings.has(productId)) {
+              let numerator = 0;
+              let denominator = 0;
+          for (const user of topKUsers) {
+              const similarityScore = user.similarity_score;
+              const userRatings = await this.getUserRatings(user.user_id.toString());
+              const rating = userRatings.find(rating => rating.product_id.toString() === productId);
+              if (rating) {
+              const ratingValue = rating.rating;
+              const userAverageRating = userRatings.reduce((sum, r) => sum + r.rating, 0) / userRatings.length;
+              numerator += similarityScore * (ratingValue - userAverageRating);
+              denominator += similarityScore;
+              }
+          }
+          const predictedRating = denominator === 0 ? 0 : numerator / denominator;
+          predictedRatings.set(productId, predictedRating);
+          }
+      }
+
+      // const n = 10;
+      const recommendedProducts = Array.from(predictedRatings.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(([productId]) => allProducts.find(product => product.id === productId));
+      
+      return recommendedProducts;
+  }
       
       // Find all the products that the current user has rated
       async getProductsOfCurrentUser(userId: string): Promise<UserProductRelationship[]>{
@@ -164,6 +220,7 @@ export class UserProductRelationshipService {
         return await this.userProductRelationshipModel.findOne({ user_id: user, product_id: productId }).select('rating').lean();
     }
 
+    
     // 
     async getUserAvgRating(user: string): Promise<number>{
         const result = await this.userProductRelationshipModel.aggregate([

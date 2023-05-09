@@ -14,7 +14,7 @@ export class CartService {
     ){}
 
     async getCartByUserId(userId: string): Promise<Cart> {
-        return await this.cartModel.findOne({user_id: userId});
+        return await this.cartModel.findOne({user_id: userId}).populate('user_id');
     }
 
     async addProductToCart(productCartDto: CartItemDto, userId: string): Promise<Cart>{
@@ -72,7 +72,6 @@ export class CartService {
         let totalAmountCart = 0;
         for (const cartItem of cart_items) {
             const newProductCart = await this.productService.getOneProduct(cartItem.product_id.toString());
-            console.log(newProductCart)
             if ((newProductCart).discount!=0)
                 totalAmountCart += (newProductCart).discount * cartItem.quantity;
             else 
@@ -80,5 +79,9 @@ export class CartService {
             
         };
         return totalAmountCart;
+    }
+
+    async deleteCartByUserId(userId:string){
+        return await this.cartModel.deleteOne({user_id: userId}).exec();
     }
 }

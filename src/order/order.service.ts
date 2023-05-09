@@ -36,8 +36,10 @@ export class OrderService {
             amount_paid: amount_paid,
             order_items: userCart.cart_items,
           });
+
+        await this.cartService.deleteCartByUserId(userId);
       
-          return order.save();
+          return (await order.save()).populate('user_id');
       }
 
       async deleteOrder(id: string): Promise<Boolean> {
@@ -50,13 +52,9 @@ export class OrderService {
         
       }
 
-      async updateOrderStatus(id: string, updateOrderStatus: string): Promise<Order> {
+      async updateOrderStatus(id: string): Promise<Order> {
         const updateOrder = await this.orderModel.findById(id);
-        const amount_paid = updateOrder.total_price;
-        updateOrder.order_status = updateOrderStatus;
-        if (updateOrderStatus === "delivered"){
-          updateOrder.amount_paid =  amount_paid;
-        }
+        updateOrder.order_status = "shipping";
         return updateOrder.save();
       }
 
@@ -75,6 +73,14 @@ export class OrderService {
       async searchOrderByOrderNumber(orderNumber: string): Promise<Order> {
         return await this.orderModel.findOne({ order_number: orderNumber }).exec();
       }
+
+
+      async checkExistProductInOrders(productId: string): Promise<Boolean> {
+        const order = await this.orderModel.findOne({
+          order_items: { $elemMatch: { product_id: productId } }
+        });
+        return Boolean(order);
+      }
       
 
     async generateOrderNumber(): Promise<string> {
@@ -87,5 +93,10 @@ export class OrderService {
             orderNumber += Math.floor(Math.random() * 10);
         }
         return orderNumber;
+    }
+
+    async deleteOrdersByUserId(userId: string) {
+      await this.cartService.deleteCartByUserId(userId);
+      return await this.orderModel.deleteMany({ user_id: userId }).exec();
     }
 }

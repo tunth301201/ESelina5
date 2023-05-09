@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/auth/roles/roles.decorator';
 import { RolesGuard } from 'src/auth/roles/roles.guard';
@@ -8,58 +8,65 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Get()
   @Roles('seller')
   async getAllUsers() {
     return await this.userService.getAllUsers();
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Post()
   @Roles('seller')
   async createUser(@Body() createUserDto: CreateUserDto) {
     return await this.userService.createUser(createUserDto);
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Get(':id')
   @Roles('seller', 'customer')
   async getUserById(@Param('id') userId: string) {
     return await this.userService.getUserById(userId);
   }
 
-  // @UseGuards(AuthGuard('jwt'), RolesGuard)
-  // @Get('/profile')
-  // @Roles('seller', 'customer')
-  // async getUserProfile(@Request() req: any) {
-  //   const userId = req.user.sub;
-  //   console.log("userId", req.user.sub)
-  //   return await this.userService.getUserById(userId.toString());
-  // }
-
-  @Patch(':id')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Get('/profile/:id')
   @Roles('seller', 'customer')
-  async updateUser(@Param('id') userId: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.userService.updateUser(userId, updateUserDto);
+  async getUserProfile(@Request() req: any) {
+    const userId = req.user.sub;
+    const user = await this.userService.getUserById(userId);
+    return user;
   }
 
-  @Patch(':id/change-password')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Put()
   @Roles('seller', 'customer')
-  async changePassword(@Param('id') userId: string, @Body() changePasswordDto: ChangePasswordDto): Promise<void> {
-    return await this.userService.changePassword(userId, changePasswordDto);
+  async updateUser(@Body() updateUserDto: UpdateUserDto, @Request() req: any) {
+    return await this.userService.updateUser(req.user.sub, updateUserDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Put('/change-password')
+  @Roles('seller', 'customer')
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Request() req: any): Promise<void> {
+    return await this.userService.changePassword(req.user.sub, changePasswordDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Delete(':id')
-    @Roles('seller')
-    async deleteUser(@Param('id') userId: string) {
-        return await this.userService.deleteUser(userId);
-    }
+  @Roles('seller')
+  async deleteUser(@Param('id') userId: string) {
+      return await this.userService.deleteUser(userId);
+  }
 
-    @Get('/search')
-    @Roles('seller')
-    async searchUser(@Query('keyword') keyword: string) {
-        return await this.userService.searchUser(keyword);    
-    }
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Get('/search')
+  @Roles('seller')
+  async searchUser(@Query('keyword') keyword: string) {
+      return await this.userService.searchUser(keyword);    
+  }
 }

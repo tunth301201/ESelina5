@@ -26,8 +26,8 @@ export class OrderController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Put('/updateOrderStatus/:idOrder')
     @Roles('seller')
-    async updateOrderStatus(@Param('idOrder') idOrder: string, @Body('updateOrderStatus') updateOrderStatus: string){
-        return await this.orderService.updateOrderStatus(idOrder, updateOrderStatus);
+    async updateOrderStatus(@Param('idOrder') idOrder: string){
+        return await this.orderService.updateOrderStatus(idOrder);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -47,7 +47,7 @@ export class OrderController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Get('/orderItems/:orderId')
-    @Roles('customer')
+    @Roles('customer', 'seller')
     async getOrdersByOrderId(@Param('orderId') orderId: string){
         return this.orderService.getOrdersById(orderId);
     }
@@ -58,5 +58,10 @@ export class OrderController {
     async searchOrderByOrderNumber(@Query('orderNumber') orderNumber: string, @Request() req: any){
         return this.orderService.searchOrderByOrderNumber(orderNumber);
  
+    }
+
+    @Get('/check-exist-in-orders/:id')
+    async checkExistProductInOrders(@Param('id') productId: string): Promise<Boolean> {
+        return this.orderService.checkExistProductInOrders(productId);
     }
 }

@@ -1,11 +1,10 @@
-import { Body, Controller, Delete, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/auth/roles/roles.decorator';
 import { RolesGuard } from '../auth/roles/roles.guard';
 import { FeedbackService } from './feedback.service';
 
 @Controller('feedbacks')
-@UseGuards(RolesGuard)
 export class FeedbackController {
     constructor(private readonly feedbacksService: FeedbackService){}
 
@@ -29,6 +28,16 @@ export class FeedbackController {
     async deleteFeedback(@Param('feedbackId') feedbackId: string, @Request() req: any){
        return await this.feedbacksService.deleteFeedback(feedbackId, req.user.sub);
     }
+
+ 
+    @Get(':id')
+    async getFeedbacksByProductId(@Param('id') productId: string) {
+        return await this.feedbacksService.getAllFeedbackByProductId(productId);
+    }
     
+    @Get('/feedback/:id')
+    async getOneFeedbackById(@Param('id') feedbackId: string) {
+        return await this.feedbacksService.getOneFeedbackById(feedbackId);
+    }
 
 }

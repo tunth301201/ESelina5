@@ -13,4 +13,9 @@ export class ProductProductRelationshipController {
     async getProductsByItemFiltering(@Param('productId') productId: string){
         return await this.productProductRelationshipService.getRecommendProductsByItemBasedFiltering(productId);
     }
+
+    @Get('all/:productId')
+    async getAllProductsByItemFiltering(@Param('productId') productId: string){
+        return await this.productProductRelationshipService.getAllRecommendProductsByItemBasedFiltering(productId);
+    }
 }

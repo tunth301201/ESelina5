@@ -58,14 +58,6 @@ export class UserProductCollabService {
           return 0;
         }
       
-        // Tính toán tổng các đánh giá của cả hai người dùng trên các sản phẩm chung
-        const sum1 = ratedProducts1
-          .filter((rp) => intersection.has(rp.product_id))
-          .reduce((sum, rp) => sum + rp.rating, 0);
-        const sum2 = ratedProducts2
-          .filter((rp) => intersection.has(rp.product_id))
-          .reduce((sum, rp) => sum + rp.rating, 0);
-      
         // Tính toán tổng bình phương của đánh giá của cả hai người dùng trên các sản phẩm chung
         const squareSum1 = ratedProducts1
           .filter((rp) => intersection.has(rp.product_id))
@@ -101,20 +93,14 @@ export class UserProductCollabService {
         const similarUsers = await this.getSimilarUsers(userId, 10);
 
         const recommendedProducts: { [productId: string]: number } = {};
-
-        console.log("user ID hiện thời: "+ userId)
       
         for (const similarUser of similarUsers) {
-
-          console.log("- user ID đang xét: "+ similarUser.other_user_id)
 
           // Lấy ra các sản phẩm họ đã đánh giá và người dùng hiện tại chưa đánh giá
           const products = await this.userProductRelationshipService.getUnratedProductsByUser(similarUser.other_user_id.toString(), ratedProducts);
 
           for (const product of products) {
             let weight = product.rating * similarUser.similarity_score;
-
-            console.log("  + product ID dang xet == "+product.product_id +", trong so weight == "+weight);
 
             if (recommendedProducts[product.product_id.toString()]) {
               recommendedProducts[product.product_id.toString()] += weight;
@@ -137,6 +123,46 @@ export class UserProductCollabService {
           { upsert: true },
         );
       
+        const recommendedProductsDetails = await this.productService.getProductBySimilarIds(recommendedProductIds);
+      
+        return recommendedProductsDetails;
+      }
+
+      async getAllRecommendProductByCollab(userId: string): Promise<Product[]> {
+
+        // Truy vấn cơ sở dữ liệu để lấy tất cả các sản phẩm đã được đánh giá và các đánh giá của người dùng (userId-product_ids-ratings)
+        const ratedProducts = await this.userProductRelationshipService.getRatedProductsByUser(userId);
+      
+        if (ratedProducts.length === 0) {
+          return [];
+        }
+      
+        const similarUsers = await this.getSimilarUsers(userId, 10);
+
+        const recommendedProducts: { [productId: string]: number } = {};
+      
+        for (const similarUser of similarUsers) {
+
+          // Lấy ra các sản phẩm họ đã đánh giá và người dùng hiện tại chưa đánh giá
+          const products = await this.userProductRelationshipService.getUnratedProductsByUser(similarUser.other_user_id.toString(), ratedProducts);
+
+          for (const product of products) {
+            let weight = product.rating * similarUser.similarity_score;
+
+            if (recommendedProducts[product.product_id.toString()]) {
+              recommendedProducts[product.product_id.toString()] += weight;
+            } else {
+              recommendedProducts[product.product_id.toString()] = weight;
+            }
+          }
+        }
+      
+        const sortedProducts = Object.keys(recommendedProducts)
+          .map(productId => ({ productId, weight: recommendedProducts[productId] }))
+          .sort((a, b) => b.weight - a.weight);
+      
+        const recommendedProductIds = sortedProducts.map(item => new Types.ObjectId(item.productId));
+
         const recommendedProductsDetails = await this.productService.getProductBySimilarIds(recommendedProductIds);
       
         return recommendedProductsDetails;

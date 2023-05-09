@@ -24,9 +24,6 @@ export class UserService {
 
     async getUserById(userId: string): Promise<User> {
         const user = await this.userModel.findById(userId).exec();
-        if (!user) {
-        throw new NotFoundException(`User with id ${userId} not found`);
-        }
         return user;
     }
 
@@ -35,7 +32,7 @@ export class UserService {
         user.firstname = updateUserDto.firstname;
         user.lastname = updateUserDto.lastname;
         user.gender = updateUserDto.gender;
-        user.birthday = await this.formatDateInput(updateUserDto.birthday);
+        user.birthday = new Date(parseInt(updateUserDto.birthday));
         user.phone = updateUserDto.phone;
         user.address = updateUserDto.address;
         return user.save();

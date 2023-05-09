@@ -14,4 +14,11 @@ export class UserProductCollabController {
     async getRecommendProductByCollab(@Request() req:any){
         return await this.userProductCollabService.getRecommendProductByCollab(req.user.sub);
     }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Get('/all')
+    @Roles('customer')
+    async getAllRecommendProductByCollab(@Request() req:any){
+        return await this.userProductCollabService.getAllRecommendProductByCollab(req.user.sub);
+    }
 }

@@ -53,7 +53,7 @@ export class ProductProductRelationshipService {
       // Lưu trữ tất cả các giá trị tương quan vào bảng ProductProductRelationship
       await this.productProductRelationshipModel.deleteMany({ product_id_1: productId });
       await this.productProductRelationshipModel.insertMany(productCorrelations);
-    }
+    } 
 
     private cosineSimilarity(a: number[], b: number[]): number {
       
@@ -97,6 +97,23 @@ export class ProductProductRelationshipService {
     async getRecommendProductsByItemBasedFiltering(productId: string): Promise<Product[]> {
       await this.calculateCorrelationsForProduct(productId);
       await this.productProductSimilarityService.generateSimilarProductsForProduct(productId, 5);
+      // Lấy danh sách các sản phẩm liên quan nhất với productId từ bảng ProductProductSimilarity
+      const productProductSimilarity = await this.productProductSimilarityService.productProductSimilarity(productId);
+  
+      // Nếu không có sản phẩm nào liên quan, trả về mảng rỗng
+      if (!productProductSimilarity || !productProductSimilarity.similar_product_ids) {
+        return [];
+      }
+  
+      // Lấy thông tin sản phẩm từ bảng Product và sắp xếp theo thứ tự giảm dần của giá trị tương quan
+      const products = await this.productService.getProductBySimilarIds(productProductSimilarity.similar_product_ids);
+  
+      return products;
+    }
+
+    async getAllRecommendProductsByItemBasedFiltering(productId: string): Promise<Product[]> {
+      await this.calculateCorrelationsForProduct(productId);
+      await this.productProductSimilarityService.generateSimilarProductsForProduct(productId, 20);
       // Lấy danh sách các sản phẩm liên quan nhất với productId từ bảng ProductProductSimilarity
       const productProductSimilarity = await this.productProductSimilarityService.productProductSimilarity(productId);
   

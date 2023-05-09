@@ -18,6 +18,10 @@ export class ProductService {
     return this.productModel.find().populate('category_id').exec();
   }
 
+  async getFiveProducts(): Promise<Product[]> {
+    return (await this.productModel.find().populate('category_id').exec()).slice(0,5);
+  }
+
   async getProductsByTagId(tagId: string): Promise<Product[]> {
     return this.productModel.find({category_id: tagId}).populate('category_id').exec();
   }
