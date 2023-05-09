@@ -19,15 +19,12 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import ShoppingBagIcon from '@heroicons/react/24/solid/ShoppingBagIcon';
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { addProductToCart, getAllCategories, getAllProducts, getCartByUserId } from 'src/api/apiServices';
-
-
-
-
-const now = new Date();
-
+import { addProductToCart, getAllCategories, getAllProducts, getCartByUserId, getCollabProducts, getFiveProducts, getProductRating, getUserBasedProducts } from 'src/api/apiServices';
+import { useRouter } from 'next/navigation';
+import { TopNav } from 'src/layouts/dashboard/top-nav';
 
 const Page = () => {
+  const router = useRouter();
 
 
   const items = [
@@ -48,13 +45,18 @@ const Page = () => {
   const [products, setProducts] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [collections, setCollections] = useState([]);
+  const [userBasedProducts, setUserBasedProducts] = useState([]);
+  const [collabProducts, setCollabProducts] = useState([]);
+  const [cartUpdated, setCartUpdated] = useState(false);
+
   useEffect(() => {
-    getAllProducts().then((res) => {
+    getFiveProducts().then((res) => {
+      console.log("5 products: ", res.data)
       setProducts(res.data);
-      getCartByUserId().then((res) => {
-        const { cart_items } = res.data;
-        setCartCount(cart_items.length);
-      })
+      // getCartByUserId().then((res) => {
+      //   const { cart_items } = res.data;
+      //   setCartCount(cart_items.length);
+      // })
       getAllCategories().then((res) => {
         setCollections(res.data);
         // console.log(res.data);
@@ -62,13 +64,34 @@ const Page = () => {
     })
   }, []);
 
+  useEffect(() => {
+    Promise.all([getUserBasedProducts(), getCollabProducts()])
+      .then(([userBasedRes, collabRes]) => {
+        console.log("user based products: ", userBasedRes.data);
+        setUserBasedProducts(userBasedRes.data);
+        console.log("collab products: ", collabRes.data);
+        setCollabProducts(collabRes.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
   
  
 
   const handleViewProduct = (productId) => {
-    window.location.href = `/view-product?product=${productId}`;
+    router.push({
+      pathname: '/view-product',
+      query: { product: productId }
+    });
   }
 
+  const handleViewAllProduct = (type) => {
+    router.push({
+      pathname: '/promotion',
+      query: { type: type }
+    });
+  }
   
   const handleAddToCart = (productId, quantity) => {
     const addCartItem = {
@@ -76,8 +99,25 @@ const Page = () => {
       quantity: quantity
     }
     addProductToCart(addCartItem).then((res) => {
+      setCartUpdated(!cartUpdated);
     })
   };
+
+  function ProductRating({ productId }) {
+    const [rating, setRating] = useState(null);
+  
+    useEffect(() => {
+      getProductRating(productId).then((res) => {
+        setRating(res.data);
+      });
+    }, [productId]);
+  
+    if (!rating) {
+      return <span>Loading...</span>;
+    }
+  
+    return <span>{rating}</span>;
+  }
 
   return (
   <>
@@ -86,7 +126,7 @@ const Page = () => {
         Home | SelinaShop
       </title>
     </Head>
-
+    <TopNav onCartUpdated={cartUpdated} />
     <Box
       component="main"
       sx={{
@@ -94,6 +134,7 @@ const Page = () => {
         py: 8
       }}
     >
+     
       <Container maxWidth="xl">
         <Grid
           container
@@ -511,6 +552,7 @@ const Page = () => {
                   alignItems="center"
                   direction="row">
                     <Button
+                    onClick={handleViewAllProduct.bind(null, "flashsale")}
                       color="inherit"
                       endIcon={(
                         <SvgIcon fontSize="small">
@@ -533,7 +575,7 @@ const Page = () => {
         xs={12}
         md={12}>
             <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
-                {products.map((product) => (
+                {products?.slice(0, 5).map((product) => (
                   <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
                       <Card>
                         <div>
@@ -548,7 +590,7 @@ const Page = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
-                                <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                                <ProductRating productId={product._id} />
                               </div>
                               <div class="flex items-center w-full justify-between min-w-0 ">
                                 <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
@@ -640,6 +682,7 @@ const Page = () => {
                     alignItems="center"
                     direction="row">
                       <Button
+                      onClick={handleViewAllProduct.bind(null, "featured-products")}
                         color="inherit"
                         endIcon={(
                           <SvgIcon fontSize="small">
@@ -661,7 +704,7 @@ const Page = () => {
               xs={12}
               md={12}>
                   <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
-                      {products.map((product) => (
+                      {userBasedProducts?.slice(0, 5).map((product) => (
                         <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
                             <Card>
                               <div>
@@ -676,7 +719,7 @@ const Page = () => {
                                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                       </svg>
-                                      <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                                      <ProductRating productId={product._id} />
                                     </div>
                                     <div class="flex items-center w-full justify-between min-w-0 ">
                                       <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
@@ -744,6 +787,7 @@ const Page = () => {
                   alignItems="center"
                   direction="row">
                     <Button
+                      onClick={handleViewAllProduct.bind(null, "today-products")}
                       color="inherit"
                       endIcon={(
                         <SvgIcon fontSize="small">
@@ -765,7 +809,7 @@ const Page = () => {
         xs={12}
         md={12}>
             <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
-                {products.map((product) => (
+                {collabProducts?.splice(0, 5).map((product) => (
                   <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
                       <Card>
                         <div>
@@ -780,7 +824,7 @@ const Page = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
-                                <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                                <ProductRating productId={product._id} />
                               </div>
                               <div class="flex items-center w-full justify-between min-w-0 ">
                                 <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>

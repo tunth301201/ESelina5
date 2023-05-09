@@ -1,4 +1,3 @@
-import { useCallback, useState } from 'react';
 import {
   Box,
   Button,
@@ -7,61 +6,75 @@ import {
   CardContent,
   CardHeader,
   Divider,
-  TextField,
-  Unstable_Grid2 as Grid
+  FormControlLabel,
+  Unstable_Grid2 as Grid,
+  Radio,
+  RadioGroup,
+  TextField
 } from '@mui/material';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { useFormik } from 'formik';
+import { changPassword, updateProfile } from 'src/api/apiServices';
 
-const states = [
-  {
-    value: 'alabama',
-    label: 'Alabama'
-  },
-  {
-    value: 'new-york',
-    label: 'New York'
-  },
-  {
-    value: 'san-francisco',
-    label: 'San Francisco'
-  },
-  {
-    value: 'los-angeles',
-    label: 'Los Angeles'
-  }
-];
 
-export const AccountProfileDetails = () => {
-  const [values, setValues] = useState({
-    firstName: 'Anika',
-    lastName: 'Visser',
-    email: 'demo@devias.io',
-    phone: '',
-    state: 'los-angeles',
-    country: 'USA'
+export const AccountProfileDetails = ({UserProfile}) => {
+
+  const userInfo = UserProfile;
+ 
+  const formik = useFormik({
+    initialValues: {
+      firstName: userInfo.firstname,
+      lastName: userInfo.lastname,
+      email: userInfo.email,
+      oldPassword: '',
+      newPassword: '',
+      gender: userInfo.gender,
+      birthday: new Date(userInfo.birthday).getTime(),
+      phone: userInfo.phone,
+      address: userInfo.address,
+      submit: null
+    },
+    onSubmit: async(values) => {
+      console.log("formik value: ", values);
+      try{
+        var updateUserDto = {
+          firstname: values.firstName,
+          lastname: values.lastName,
+          gender: values.gender,
+          birthday: values.birthday.toString(),
+          phone: values.phone,
+          address: values.address,
+        };
+        updateProfile(updateUserDto);
+      } catch(err) {
+        console.log(err);
+      }
+
+      if (values.oldPassword && values.newPassword) {
+        try{
+          var changePasswordDto = {
+            oldPassword: values.oldPassword,
+            newPassword: values.newPassword
+          };
+          console.log("passDTO: ", changePasswordDto)
+          changPassword(changePasswordDto);
+        } catch(err) {
+        console.log(err);
+        }
+      }
+    }
   });
 
-  const handleChange = useCallback(
-    (event) => {
-      setValues((prevState) => ({
-        ...prevState,
-        [event.target.name]: event.target.value
-      }));
-    },
-    []
-  );
 
-  const handleSubmit = useCallback(
-    (event) => {
-      event.preventDefault();
-    },
-    []
-  );
+
+  
 
   return (
     <form
       autoComplete="off"
       noValidate
-      onSubmit={handleSubmit}
+      onSubmit={formik.handleSubmit}
     >
       <Card>
         <CardHeader
@@ -75,101 +88,141 @@ export const AccountProfileDetails = () => {
               spacing={3}
             >
               <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  helperText="Please specify the first name"
-                  label="First name"
-                  name="firstName"
-                  onChange={handleChange}
-                  required
-                  value={values.firstName}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Last name"
-                  name="lastName"
-                  onChange={handleChange}
-                  required
-                  value={values.lastName}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  name="email"
-                  onChange={handleChange}
-                  required
-                  value={values.email}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  onChange={handleChange}
-                  type="number"
-                  value={values.phone}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Country"
-                  name="country"
-                  onChange={handleChange}
-                  required
-                  value={values.country}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Select State"
-                  name="state"
-                  onChange={handleChange}
-                  required
-                  select
-                  SelectProps={{ native: true }}
-                  value={values.state}
+                  xs={12}
+                  md={12}
                 >
-                  {states.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </TextField>
-              </Grid>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    name="email"
+                    required
+                    value={formik.values.email}
+                    
+                  />
+                </Grid>
+                <Grid
+                  xs={12}
+                  md={6}
+                >
+                  <TextField
+                    fullWidth
+                    label="First Name"
+                    name="firstName"
+                    onChange={formik.handleChange}
+                    required
+                    value={formik.values.firstName}
+                  />
+                </Grid>
+                <Grid
+                  xs={12}
+                  md={6}
+                >
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    name="lastName"
+                    onChange={formik.handleChange}
+                    required
+                    value={formik.values.lastName}
+                  />
+                </Grid>
+                <Grid
+                  xs={12}
+                  md={12}
+                >
+                  <RadioGroup
+                    row
+                    style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                    name='gender'
+                    value={formik.values.gender}
+                    onChange={formik.handleChange}
+                  >
+                    <FormControlLabel value="female" control={<Radio />} label="Female" labelPlacement="top"/>
+                    <FormControlLabel value="male" control={<Radio />} label="Male" labelPlacement="top"/>
+                  </RadioGroup>
+  
+                </Grid>
+               
+                <Grid
+                  xs={12}
+                  md={6}
+                >
+                  <TextField
+                    fullWidth
+                    label="Old Password"
+                    name="oldPassword"
+                    type="password"
+                    onChange={formik.handleChange}
+                    value={formik.values.oldPassword}
+                  />
+                </Grid>
+
+                <Grid
+                  xs={12}
+                  md={6}
+                >
+                  <TextField
+                    fullWidth
+                    label="New Password"
+                    name="newPassword"
+                    type="password"
+                    onChange={formik.handleChange}
+                    value={formik.values.newPassword}
+                  />
+                </Grid>
+                
+
+                <Grid
+                xs={12}
+                md={6}
+                >
+                  <TextField
+                  fullWidth
+                  label="Phone"
+                  name="phone"
+                  onChange={formik.handleChange}
+                  value={formik.values.phone}
+                   />
+                </Grid>
+
+                <Grid
+                xs={12}
+                md={6}
+                >
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                    fullWidth
+                    disableFuture
+                    label="Birthday"
+                    openTo="year"
+                    views={['year', 'month', 'day']}
+                    value={formik.values.birthday}
+                    onChange={(value) => {
+                      formik.setFieldValue('birthday', Date.parse(value));
+                    }}
+                    renderInput={(params) => <TextField fullWidth {...params} />}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+
+                <Grid
+                  xs={12}
+                  md={12}
+                >
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    name="address"
+                    onChange={formik.handleChange}
+                    value={formik.values.address}
+                  />
+                </Grid>
             </Grid>
           </Box>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">
+          <Button variant="contained" type="submit">
             Save details
           </Button>
         </CardActions>

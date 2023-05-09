@@ -25,12 +25,17 @@ import HomeIcon from '@heroicons/react/24/solid/HomeIcon';
 import TagIcon from '@heroicons/react/24/solid/TagIcon';
 import ShoppingCartIcon from '@heroicons/react/24/solid/ShoppingCartIcon';
 import UserIcon from '@heroicons/react/24/solid/UserIcon';
+import { useFormik } from 'formik';
+import { searchProductResult } from 'src/api/apiServices';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 
 const TOP_NAV_HEIGHT = 64;
 
-export const TopNav = (props) => {
-  const { onNavOpen } = props;
+export const TopNav = ({onNavOpen, onCartUpdated}) => {
+  // const { onNavOpen, carts, updateCart } = props;
+  const router = useRouter();
   const accountPopover = usePopover();
   const [carts, setCarts] = useState([]);
   const [noOfCarts, setNoOfCarts] = useState(0);
@@ -39,30 +44,51 @@ export const TopNav = (props) => {
     getCartByUserId().then((res) => {
       setCarts(res.data);
       const { cart_items } = res.data;
-      setNoOfCarts(cart_items.length);
+      if(cart_items){
+        setNoOfCarts(cart_items.length);
+      } 
     });
   };
   
+  
   useEffect(() => {
     updateCart();
-  }, []);
+  }, [onCartUpdated]);
 
   const handleViewCart = () => {
-    window.location.href = `/cart`;
+    router.push({
+      pathname: '/cart',
+    });
   }
+
 
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     getAllCategories().then((res) => {
       setCategories(res.data);
     })
-  })
+  },[]);
 
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?._id);
 
   const handleSelectChange = (event) => {
     setSelectedCategory(event.target.value);
   };
+
+  const formik = useFormik({
+    initialValues: {
+      search: '',
+      submit: null
+    },
+    onSubmit: (values) => {
+      if (values.search && values.search.length > 0) {
+      router.push({
+        pathname: '/promotion',
+        query: { search: values.search }
+      });
+    }
+  }
+  });
  
 
   return (
@@ -87,6 +113,8 @@ export const TopNav = (props) => {
       <img class="" src="/assets/selinashoplogo.png" alt="" width="100px"/>
     </div>
 
+{/* SEARCHING */}
+<form onSubmit={formik.handleSubmit}>
     <div class="w-full max-w-xs xl:max-w-lg 2xl:max-w-2xl bg-gray-100 rounded-md hidden xl:flex items-center">
       <select  onChange={handleSelectChange} value={selectedCategory} class="bg-transparent uppercase font-bold text-sm p-4 mr-4" name="" id="">
         
@@ -99,15 +127,21 @@ export const TopNav = (props) => {
                     </option>
                   ))}
       </select>
-      <input class="border-l border-gray-300 bg-transparent font-semibold text-sm pl-4" type="text" placeholder="I'm searching for ..." />
-      <svg class="ml-auto h-5 px-4 text-gray-500 svg-inline--fa fa-search fa-w-16 fa-9x" aria-hidden="true" focusable="false" data-prefix="far" data-icon="search" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M508.5 468.9L387.1 347.5c-2.3-2.3-5.3-3.5-8.5-3.5h-13.2c31.5-36.5 50.6-84 50.6-136C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c52 0 99.5-19.1 136-50.6v13.2c0 3.2 1.3 6.2 3.5 8.5l121.4 121.4c4.7 4.7 12.3 4.7 17 0l22.6-22.6c4.7-4.7 4.7-12.3 0-17zM208 368c-88.4 0-160-71.6-160-160S119.6 48 208 48s160 71.6 160 160-71.6 160-160 160z"></path></svg>
+      
+        <input class="border-l border-gray-300 bg-transparent font-semibold text-sm pl-4" value={formik.values.search} onChange={formik.handleChange} name='search' type="text" placeholder="I'm searching for ..." />
+        <button type="submit" class="border-l border-gray-300 bg-transparent font-semibold text-sm ml-auto">
+          <svg class="h-5 px-4 text-gray-500 svg-inline--fa fa-search fa-w-16 fa-9x" aria-hidden="true" focusable="false" data-prefix="far" data-icon="search" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M508.5 468.9L387.1 347.5c-2.3-2.3-5.3-3.5-8.5-3.5h-13.2c31.5-36.5 50.6-84 50.6-136C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c52 0 99.5-19.1 136-50.6v13.2c0 3.2 1.3 6.2 3.5 8.5l121.4 121.4c4.7 4.7 12.3 4.7 17 0l22.6-22.6c4.7-4.7 4.7-12.3 0-17zM208 368c-88.4 0-160-71.6-160-160S119.6 48 208 48s160 71.6 160 160-71.6 160-160 160z"></path></svg>
+        </button>
     </div>
+</form>
+
 
 
     <div class="ml-auto md:w-48 hidden sm:flex flex-col place-items-end">
       <span class="font-bold md:text-xl">+84 352 997 187</span>
       <span class="font-semibold text-sm text-gray-400">Support 24/7</span>
     </div>
+    
 
  
     <nav class="contents">
@@ -161,16 +195,24 @@ export const TopNav = (props) => {
     <nav class="nav font-semibold text-lg">
         <ul class="flex items-center">
             <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer active">
-              <a href='/'> <SvgIcon><HomeIcon/></SvgIcon> Home</a>
+              <Link href='/'>
+                <SvgIcon><HomeIcon/></SvgIcon> Home
+              </Link>
             </li>
             <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer">
-              <a href='/promotion'> <SvgIcon><FireIcon/></SvgIcon> Promotion</a>            
-              </li>
-            <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer">
-              <a href='/collection'> <SvgIcon><TagIcon/></SvgIcon> Collection</a>
+              <Link href='/promotion'>
+                <SvgIcon><FireIcon/></SvgIcon> Promotion
+              </Link>          
             </li>
             <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer">
-              <a href='/order'> <SvgIcon><ShoppingBagIcon/></SvgIcon> Order</a>
+              <Link href='/collection'>
+               <SvgIcon><TagIcon/></SvgIcon> Collection
+              </Link>
+            </li>
+            <li class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer">
+              <Link href='/order'>
+                <SvgIcon><ShoppingBagIcon/></SvgIcon> Order
+              </Link>
             </li>
         </ul>
     </nav>
@@ -195,5 +237,5 @@ export const TopNav = (props) => {
 };
 
 TopNav.propTypes = {
-  onNavOpen: PropTypes.func
+  onNavOpen: PropTypes.func,
 };

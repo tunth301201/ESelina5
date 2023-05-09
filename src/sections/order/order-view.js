@@ -277,7 +277,7 @@ import { getOneProduct, getOrderByOrderId } from 'src/api/apiServices';
                 
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Typography color="text.secondary" variant="subtitle2">SubTotal:</Typography>
-                        <Typography variant="h7">+ $145</Typography>
+                        <Typography variant="h7">+ ${orderDetail.total_price}</Typography>
                         </Box>
 
                         <Box display="flex" justifyContent="space-between" alignItems="center" padding="0px 0 10px 0">

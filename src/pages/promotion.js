@@ -8,7 +8,7 @@ import {
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { addProductToCart, getAllProducts, getProductsByTag } from 'src/api/apiServices';
+import { addProductToCart, getAllProducts, getProductsByTag, getProductRating, getAllUserBasedProducts, getAllCollabProducts, getAllProductProductRelationship, searchProductResult } from 'src/api/apiServices';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 
 
@@ -16,31 +16,68 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 const Page = () => {
   const router = useRouter();
   const { tag } = router.query;
+  const { type } =  router.query;
+  const { relatedProduct } = router.query;
+  const { search } = router.query;
+  
   const tagId = tag ? tag : null;
+  const typeC = type ? type : null;
+  const relatedProductId = relatedProduct ? relatedProduct : null; 
+  const searchC = search ? search : null;
+
   const [productsByTag, setProductsByTag] = useState([]);
   
   useEffect(() => {
     if (tagId) {
       getProductsByTag(tagId).then((res) => {
         setProductsByTag(res.data);
+        console.log("displaying product by Tag")
+      })
+    }
+    else if (typeC == "featured-products"){
+      getAllUserBasedProducts().then((res) => {
+        setProductsByTag(res.data);
+        console.log("displaying products by user-based")
+      })
+    }
+    else if (typeC == "today-products"){
+      getAllCollabProducts().then((res) => {
+        setProductsByTag(res.data);
+        console.log("displaying products by collab")
+      })
+    }
+    else if (relatedProductId) {
+      getAllProductProductRelationship(relatedProductId).then((res) => {
+        setProductsByTag(res.data);
+        console.log("displaying related products")
+      })
+    }
+    else if (searchC) {
+      searchProductResult(searchC).then((res) => {
+        if (res.data){
+          setProductsByTag(res.data);
+          console.log("displaying search results")
+        }
+        
       })
     }
     else {
       getAllProducts().then((res) => {
         setProductsByTag(res.data);
+        console.log("displaying all products")
       })
     }
    
-  }, []);
+  }, [tagId, typeC, relatedProductId, searchC]);
 
 
   const [page, setPage] = useState(1);
-  const numPages = Math.ceil(productsByTag.length/50);
+  const numPages = Math.ceil(productsByTag.length/20);
   const handleChangePage = (event, value) => {
     setPage(value);
   };
-  const startIndex = (page -1)*50;
-  const displayedProducts = productsByTag.slice(startIndex, startIndex + 50);
+  const startIndex = (page -1)*20;
+  const displayedProducts = productsByTag.slice(startIndex, startIndex + 20);
 
   const handleAddToCart = (productId, quantity) => {
     const addCartItem = {
@@ -51,7 +88,26 @@ const Page = () => {
     })
   };
   const handleViewProduct = (productId) => {
-    window.location.href = `/view-product?product=${productId}`;
+    router.push({
+      pathname: '/view-product',
+      query: { product: productId }
+    });
+  }
+
+  function ProductRating({ productId }) {
+    const [rating, setRating] = useState(null);
+  
+    useEffect(() => {
+      getProductRating(productId).then((res) => {
+        setRating(res.data);
+      });
+    }, [productId]);
+  
+    if (!rating) {
+      return <span>Loading...</span>;
+    }
+  
+    return <span>{rating}</span>;
   }
 
   return (
@@ -85,7 +141,7 @@ const Page = () => {
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
-                          <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                          <ProductRating productId={product._id} />
                         </div>
                         <div class="flex items-center w-full justify-between min-w-0 ">
                           <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
@@ -100,7 +156,7 @@ const Page = () => {
                       
                       <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
                         <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
-                          <span>Add Cart</span>
+                          <span>Add to Cart</span>
                           
                         </button>
                         <button onClick={handleViewProduct.bind(null, product._id)} class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">

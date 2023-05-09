@@ -178,29 +178,7 @@ const items = [
   
 
 const Page = () => {
-  
-  
-//   const [users, setUsers] = useState([]);
-//   const { decodedToken, isTokenExpired } = useJwt(localStorage.getItem('token'));
-// console.log("decodedToken: "+ decodedToken)
 
-//   if (isTokenExpired) {
-//     // Token hết hạn
-//     // Điều hướng người dùng đến trang đăng nhập hoặc cập nhật token mới
-//     window.location.href = '/auth/login';
-//   }
-
-//   if (decodedToken.role !== 'seller') {
-//     // Người dùng không có vai trò 'seller'
-//     // Hiển thị thông báo lỗi hoặc từ chối truy cập vào trang
-//     window.location.href = '/auth/login';
-//   }
-
-//   useEffect(() => {
-//     axios.get("http://localhost:4000/user").then((response) => {
-//       setProducts(response.data);
-//     });
-//   }, []);
 const [users, setUsers] = useState([]);
 
 useEffect(() => {

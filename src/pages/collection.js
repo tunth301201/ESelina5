@@ -17,11 +17,13 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { getAllCategories } from 'src/api/apiServices';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
+import { useRouter } from 'next/navigation';
 
 
 
 
 const Page = () => {
+  const router = useRouter();
   const [collections, setCollections] = useState([]);
   useEffect(() => {
     getAllCategories().then((res) => {
@@ -31,7 +33,10 @@ const Page = () => {
   }, []);
 
   const handleViewProductsByTag = (tagId) => {
-    window.location.href = `/promotion?tag=${tagId}`;
+    router.push({
+      pathname: '/promotion',
+      query: { tag: tagId }
+    });
   }
 
 

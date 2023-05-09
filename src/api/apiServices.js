@@ -18,6 +18,77 @@ export const getAllProducts = async () => {
     })
 }
 
+export const getFiveProducts = async () => {
+  return await axios.get("http://localhost:4000/product/five-products")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getUserBasedProducts = async () => {
+  return await axios.get(`http://localhost:4000/user-product-relationship`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+
+export const getAllUserBasedProducts = async () => {
+  return await axios.get(`http://localhost:4000/user-product-relationship/all`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getCollabProducts = async () => {
+  return await axios.get(`http://localhost:4000/user-product-collab`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getAllCollabProducts = async () => {
+  return await axios.get(`http://localhost:4000/user-product-collab/all`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
 export const getOneProduct = async (productId) => {
   return await axios.get(`http://localhost:4000/product/${productId}`)
     .then(res => {
@@ -36,6 +107,10 @@ export const getProductsByTag = async (tagId) => {
     .catch(err => {
         console.log(err)
     })
+}
+
+export const searchProductResult = async (searchKeyword) => {
+  return await axios.get(`http://localhost:4000/product/product/search?keyword=${searchKeyword}`)
 }
 
 
@@ -63,6 +138,16 @@ export const getProductProductRelationship = async (productId) => {
     })
 }
 
+export const getAllProductProductRelationship = async (productId) => {
+  return await axios.get(`http://localhost:4000/product-product-relationship/all/${productId}`)
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
 // ==========================Cart===============================
 export const getCartByUserId = async () => {
   return await axios.get(`http://localhost:4000/cart`, {
@@ -80,8 +165,37 @@ export const getCartByUserId = async () => {
 }
 
 export const addProductToCart = async (addCartItem) => {
-  console.log("cart item ", addCartItem)
   return await axios.post(`http://localhost:4000/cart`, addCartItem, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const updateCart = async (updateCartItem) => {
+  return await axios.put(`http://localhost:4000/cart`, updateCartItem, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const deleteCartItem = async (idCartItem) => {
+  return await axios.delete(`http://localhost:4000/cart/${idCartItem}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
@@ -137,7 +251,6 @@ export const getOrderByOrderId = async (orderId) => {
     },
   })
     .then(res => {
-      console.log ("back end", res.data);
         return res;
     })
     .catch(err => {
@@ -156,5 +269,99 @@ export const getAllCategories = async () => {
     })
 }
 
+// ======================User======================
+export const getUserProfile = async () => {
+  return await axios.get(`http://localhost:4000/user/profile/${1}`,{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
 
+export const updateProfile = async (updateUserDto) => {
+  return await axios.put("http://localhost:4000/user", updateUserDto, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
 
+// =====================Feedback=====================
+export const getFeedbacksByProductId = async (id) => {
+  return await axios.get(`http://localhost:4000/feedbacks/${id}`)
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getRatingFeedbacks = async (userId, productId) => {
+  return await axios.get(`http://localhost:4000/user-product-relationship/user-rating/${userId}/${productId}`)
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const ratingProduct = async (productId, rating) => {
+  return await axios.post(`http://localhost:4000/user-product-relationship`,{
+    product_id: productId,
+    rating: rating
+  },{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const sendFeedback = async (productId, feedbackContent) => {
+  return await axios.post(`http://localhost:4000/feedbacks/${productId}`,{
+    feedback_content: feedbackContent,
+  },{
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+    },
+  })
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getOneFeedbackById = async (id) => {
+  return await axios.get(`http://localhost:4000/feedbacks/feedback/${id}`)
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}

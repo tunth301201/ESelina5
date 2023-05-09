@@ -3,12 +3,27 @@ import { Box, Container, Stack, Typography, Unstable_Grid2 as Grid } from '@mui/
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { AccountProfile } from 'src/sections/account/account-profile';
 import { AccountProfileDetails } from 'src/sections/account/account-profile-details';
+import { useEffect, useState } from 'react';
+import { getUserProfile } from 'src/api/apiServices';
 
-const Page = () => (
+const Page = () => {
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(() => {
+    getUserProfile().then((res) => {
+      console.log("user profile: ",res.data);
+      setUserInfo(res.data);
+      
+    })
+    .catch((err) => {
+      console.error("Error getting profile:", err);
+    });
+  }, []);
+
+  return (
   <>
     <Head>
       <title>
-        Account | Devias Kit
+        Account | SelinaShop
       </title>
     </Head>
     <Box
@@ -32,17 +47,15 @@ const Page = () => (
             >
               <Grid
                 xs={12}
-                md={6}
-                lg={4}
+                md={12}
+                lg={12}
               >
-                <AccountProfile />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-                lg={8}
-              >
-                <AccountProfileDetails />
+                {userInfo? (
+                  <AccountProfileDetails 
+                  UserProfile={userInfo}
+                  />
+                ) : ""}
+                
               </Grid>
             </Grid>
           </div>
@@ -50,7 +63,7 @@ const Page = () => (
       </Container>
     </Box>
   </>
-);
+)};
 
 Page.getLayout = (page) => (
   <DashboardLayout>

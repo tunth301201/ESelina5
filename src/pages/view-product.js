@@ -23,9 +23,10 @@ import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import SwipeableViews from 'react-swipeable-views';
-import { addProductToCart, getOneProduct, getProductProductRelationship, getProductRating } from 'src/api/apiServices';
+import { addProductToCart, getFeedbacksByProductId, getOneFeedbackById, getOneProduct, getProductProductRelationship, getProductRating, getRatingFeedbacks, ratingProduct, sendFeedback } from 'src/api/apiServices';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-
+import { formatDistanceToNow } from 'date-fns';
+import { useFormik } from 'formik';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -60,6 +61,36 @@ function TabPanel(props) {
     };
   }
 
+  function ProductRating({ productId }) {
+    const [rating, setRating] = useState(null);
+  
+    useEffect(() => {
+      getProductRating(productId).then((res) => {
+        setRating(res.data);
+      });
+    }, [productId]);
+  
+    if (!rating) {
+      return <span>Loading...</span>;
+    }
+  
+    return <span>{rating}</span>;
+  }
+
+  function FeedbackRating({userId, productId}) {
+    const [feedbackRating, setFeedbackRating] = useState(null);
+
+    useEffect(() => {
+      getRatingFeedbacks(userId, productId).then((res) => {
+        setFeedbackRating(res.data.rating);
+      });
+    },[userId, productId]);
+    if (!feedbackRating){
+      return <span>Loading...</span>;
+    } 
+    return <Rating name="read-only" value={feedbackRating} sx={{ ml: 1 }} readOnly />
+  }
+
 const Page = () => {
   const router = useRouter();
   const { product } = router.query;
@@ -68,20 +99,29 @@ const Page = () => {
   const [productItem, setProductItem] = useState(null);
   const [productRating, setProductRating] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  
 
 
   useEffect(() => {
     getOneProduct(productId).then((res) => {
       setProductItem(res.data);
       getProductRating(productId).then((res) => {
-        setProductRating(res.data);
+        if (res.data){
+          setProductRating(res.data);
+        } else {
+          setProductRating(0);
+        }
+        
       })
       getProductProductRelationship(productId).then((res) => {
-      
         setRelatedProducts(res.data);
       })
+      getFeedbacksByProductId(productId).then((res) => {
+        setFeedbacks(res.data);
+      })
     })
-  })
+  },[]);
 
 
 
@@ -106,7 +146,10 @@ const Page = () => {
       };
 
       const handleViewProduct = (productId) => {
-        window.location.href = `/view-product?product=${productId}`;
+        router.push({
+          pathname: '/view-product',
+          query: { product: productId }
+        });
       }
 
       const handleAddToCart = (productId, quantity) => {
@@ -117,6 +160,42 @@ const Page = () => {
         addProductToCart(addCartItem).then((res) => {
         })
       };
+
+      const handleViewAllProduct = (productId) => {
+        router.push({
+          pathname: '/promotion',
+          query: { relatedProduct: productId }
+        });
+      }
+
+  const formik = useFormik({
+    initialValues: {
+      rating: 0,
+      feedbackContent: '',
+      submit: null,
+    },
+    onSubmit: (values) => {
+      try {
+        ratingProduct(productId, values.rating).then((res) => {
+          sendFeedback(productId, values.feedbackContent).then((res) => {
+            getFeedbacksByProductId(productId).then((res) => {
+              setFeedbacks(res.data);
+              formik.resetForm();
+            })
+            getProductRating(productId).then((res) => {
+              if (res.data){
+                setProductRating(res.data);
+              } else {
+                setProductRating(0);
+              }
+            })
+          })
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  })
       
    return (
   <>
@@ -154,9 +233,9 @@ const Page = () => {
               </Grid>
               <Grid justifyContent="center" alignItems="center">
                   <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', ml: 2 }}>
-                      <img alt="avatar 1" src={`data:${productItem.images[1].contentType};base64,${productItem.images[1].data}`} style={{ width: '100px', height: '100px', padding: '5px' }} />
-                      <img alt="avatar 2" src={`data:${productItem.images[2].contentType};base64,${productItem.images[2].data}`} style={{ width: '100px', height: '100px', padding: '5px' }} />
-                      <img alt="avatar 3" src={`data:${productItem.images[3].contentType};base64,${productItem.images[3].data}`} style={{ width: '100px', height: '100px', padding: '5px' }} />
+                      <img alt="avatar 1" src={`data:${productItem.images[0].contentType};base64,${productItem.images[0].data}`} style={{ width: '100px', height: '100px', padding: '5px' }} />
+                      <img alt="avatar 2" src={`data:${productItem.images[1].contentType};base64,${productItem.images[1].data}`} style={{ width: '100px', height: '100px', padding: '5px' }} />
+                      <img alt="avatar 3" src={`data:${productItem.images[2].contentType};base64,${productItem.images[2].data}`} style={{ width: '100px', height: '100px', padding: '5px' }} />
                   </Box>
               </Grid>    
             </Grid>
@@ -184,7 +263,8 @@ const Page = () => {
 
                   <Box sx={{ display: 'flex', alignItems: 'center', padding: '5px 0px 5px 0px' }}>
                       <Typography variant="body1">Rate:</Typography>
-                      <Rating name="read-only" value={5} precision={5-0} sx={{ ml: 1 }} readOnly />
+                      <Rating name="read-only" value={productRating}  sx={{ ml: 1 }} readOnly />
+                      <span>({productRating.toFixed(1)})</span>
                       
                   </Box>
 
@@ -255,55 +335,37 @@ const Page = () => {
                       </div>
                   </TabPanel>
                   <TabPanel value={value} index={1} >
+                    {feedbacks?.map((feedback) => (
                       <Card sx={{ p: 2, marginBottom: 2 }}>
-                          <div style={{ width: '100%', display: 'flex', alignItems: 'center'}}>
-                              <Avatar
-                              src='/assets/avatars/avatar-neha-punita.png'
-                              alt=''
-                              style={{ width: 40, height: 40, marginRight: 10 }}
-                              />
-                              
-                              <Box>
-                                  <Typography variant="subtitle2">
-                                      Selina Nguyen
-                                  </Typography>
+                      <div style={{ width: '100%', display: 'flex', alignItems: 'center'}}>
+                          <Avatar
+                          src='/assets/avatars/avatar-neha-punita.png'
+                          alt=''
+                          style={{ width: 40, height: 40, marginRight: 10 }}
+                          />
+                          
+                          <Box>
+                              <Typography variant="subtitle2">
+                                  {feedback.user_id.firstname} {feedback.user_id.lastname}
+                              </Typography>
 
-                                  <Box sx={{ display: 'flex', alignItems: 'center', padding: '5px 0px 5px 0px' }}>
-                                      <Rating name="read-only" value={5} precision={5-0} sx={{ ml: 1 }} readOnly />
-                                      <Typography variant="body1" sx={{ ml: 1 }}>2 days ago</Typography>
-                                  </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', padding: '5px 0px 5px 0px' }}>
+                                  <FeedbackRating 
+                                    userId={feedback.user_id._id} 
+                                    productId={feedback.product_id}
+                                  />
+                                  <Typography variant="body1" sx={{ ml: 1 }}>{formatDistanceToNow(new Date(feedback.createdAt))} ago</Typography>
                               </Box>
-                          </div>
-                          <Typography variant="body1" padding='10px'>
-                              It's so good
-                          </Typography>
+                          </Box>
+                      </div>
+                      <Typography variant="body1" padding='10px'>
+                          {feedback.feedback_content}
+                      </Typography>
                       </Card>
-
-                      <Card sx={{ p: 2, marginBottom: 2 }}>
-                          <div style={{ width: '100%', display: 'flex', alignItems: 'center'}}>
-                              <Avatar
-                              src='/assets/avatars/avatar-neha-punita.png'
-                              alt=''
-                              style={{ width: 40, height: 40, marginRight: 10 }}
-                              />
-                              
-                              <Box>
-                                  <Typography variant="subtitle2">
-                                      Hue Nguyen
-                                  </Typography>
-
-                                  <Box sx={{ display: 'flex', alignItems: 'center', padding: '5px 0px 5px 0px' }}>
-                                      <Rating name="read-only" value={5} precision={5-0} sx={{ ml: 1 }} readOnly />
-                                      <Typography variant="body1" sx={{ ml: 1 }}>just now</Typography>
-                                  </Box>
-                              </Box>
-                          </div>
-                          <Typography variant="body1" padding='10px'>
-                            Excellent!!!
-                          </Typography>
-                      </Card>
-
-                      <Card sx={{ p: 2, marginBottom: 2 }}>
+                    ))}
+                     
+                  <form onSubmit={formik.handleSubmit}>
+                    <Card sx={{ p: 2, marginBottom: 2 }}>
                   
                           <CardContent>
                               <Typography
@@ -320,7 +382,12 @@ const Page = () => {
                                   Your rating *:
                               </Typography>
 
-                              <Rating padding='5px 0px 5px 5px'></Rating>
+                              <Rating 
+                                name='rating'
+                                padding='5px 0px 5px 5px' 
+                                value={formik.values.rating}
+                                onChange={formik.handleChange}
+                                ></Rating>
 
                               <Typography
                                   gutterBottom
@@ -332,21 +399,24 @@ const Page = () => {
 
                               <TextField
                                   fullWidth
-                                  name="description"
-                                  // onChange={handleChange}
+                                  name="feedbackContent"
+                                  value={formik.values.feedbackContent}
+                                  onChange={formik.handleChange}
                                   required
                                   multiline
                               />
                           </CardContent>
                           
                           <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                              <Button variant="contained" >
+                              <Button variant="contained" type='submit'>
                                   Send
                               </Button>
                           </CardActions>
                           
 
                       </Card>
+                  </form>
+                      
                   </TabPanel>
               </SwipeableViews>
             </Grid>
@@ -378,6 +448,7 @@ const Page = () => {
                       alignItems="center"
                       direction="row">
                           <Button
+                          onClick={handleViewAllProduct.bind(null, productId)}
                           color="inherit"
                           endIcon={(
                               <SvgIcon fontSize="small">
@@ -418,18 +489,17 @@ const Page = () => {
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                         </svg>
-                                        <span class="text-gray-400 whitespace-nowrap mr-3">4.60</span>
+                                        <ProductRating productId={product._id} />
                                       </div>
                                       <div class="flex items-center w-full justify-between min-w-0 ">
-                                        <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">Lorem ipsum
-                                          is placeholder text commonly used in the graphic</h2>
+                                        <h2 class="text-lg mr-auto cursor-pointer text-gray-900 hover:text-purple-500 truncate ">{product.name}</h2>
                                         <div class="flex items-center bg-green-400 text-white text-xs px-2 py-1 ml-3 rounded-lg">
                                           INSTOCK</div>
                                       </div>
                                     </div>
                                     <div class="flex items-center">
-                                    <span class="text-x text-gray-500 font-semibold mt-1 ml-2 mr-1"><del class="text-gray-500">$240.00</del></span>
-                                      <div class="text-xl text-red-500 font-semibold mt-1">$240.00</div>
+                                    <span class="text-x text-gray-500 font-semibold mt-1 ml-2 mr-1"><del class="text-gray-500">${product.price}</del></span>
+                                      <div class="text-xl text-red-500 font-semibold mt-1">${product.discount}</div>
                                     </div>
                                     
                                     <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
