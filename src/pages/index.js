@@ -64,18 +64,33 @@ const Page = () => {
     })
   }, []);
 
+  // useEffect(() => {
+  //   Promise.all([getUserBasedProducts(), getCollabProducts()])
+  //     .then(([userBasedRes, collabRes]) => {
+  //       console.log("user based products: ", userBasedRes.data);
+  //       setUserBasedProducts(userBasedRes.data);
+  //       console.log("collab products: ", collabRes.data);
+  //       setCollabProducts(collabRes.data);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // }, []);
+
   useEffect(() => {
-    Promise.all([getUserBasedProducts(), getCollabProducts()])
-      .then(([userBasedRes, collabRes]) => {
-        console.log("user based products: ", userBasedRes.data);
-        setUserBasedProducts(userBasedRes.data);
-        console.log("collab products: ", collabRes.data);
-        setCollabProducts(collabRes.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
+    getCollabProducts().then((res) => {
+      setCollabProducts(res.data);
+      console.log("collab products: ", res.data);
+    })
+  },[]);
+
+  useEffect(() => {
+    getUserBasedProducts().then((res) => {
+      setUserBasedProducts(res.data);
+      console.log("user based products: ", res.data);
+    })
+  },[]);
+
   
  
 
@@ -704,7 +719,7 @@ const Page = () => {
               xs={12}
               md={12}>
                   <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
-                      {userBasedProducts?.slice(0, 5).map((product) => (
+                      {userBasedProducts?.map((product) => (
                         <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
                             <Card>
                               <div>
@@ -809,7 +824,7 @@ const Page = () => {
         xs={12}
         md={12}>
             <Grid container spacing={2} columns={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
-                {collabProducts?.splice(0, 5).map((product) => (
+                {collabProducts?.map((product) => (
                   <Grid item xs={12} sm={4} md={2} lg={2.4} key={product._id}>
                       <Card>
                         <div>

@@ -67,6 +67,7 @@ export const getCollabProducts = async () => {
     },
   })
     .then(res => {
+      console.log("collab items: ", res.data[0])
         return res;
     })
     .catch(err => {
@@ -75,13 +76,14 @@ export const getCollabProducts = async () => {
 }
 
 export const getAllCollabProducts = async () => {
-  return await axios.get(`http://localhost:4000/user-product-collab/all`, {
+  return await axios.get(`http://localhost:4000/user-product-collab/collab/all`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
     },
   })
     .then(res => {
+      console.log("collab items: ", res.data[0])
         return res;
     })
     .catch(err => {

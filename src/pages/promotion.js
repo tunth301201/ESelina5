@@ -43,8 +43,10 @@ const Page = () => {
     }
     else if (typeC == "today-products"){
       getAllCollabProducts().then((res) => {
+        
         setProductsByTag(res.data);
         console.log("displaying products by collab")
+        
       })
     }
     else if (relatedProductId) {
