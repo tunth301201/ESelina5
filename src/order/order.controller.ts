@@ -64,4 +64,19 @@ export class OrderController {
     async checkExistProductInOrders(@Param('id') productId: string): Promise<Boolean> {
         return this.orderService.checkExistProductInOrders(productId);
     }
+
+    @Get('/order/totalProfit')
+    async getTotalProfit(){
+        return await this.orderService.totalProfit();
+    }
+
+    @Get('/order/totalByMonth')
+    async getGroupByMonth(){
+        return await this.orderService.groupSaleByMonths();
+    }
+
+    @Get('/order/sixLastestOrders')
+    async getSixLastestOrders(){
+        return await this.orderService.sixLatestOrders();
+    }
 }

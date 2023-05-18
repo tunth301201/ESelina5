@@ -82,6 +82,7 @@ export class UserProductCollabService {
       }
 
       async getRecommendProductByCollab(userId: string): Promise<Product[]> {
+        const allProducts = await this.productService.getAllProducts();
 
         // Truy vấn cơ sở dữ liệu để lấy tất cả các sản phẩm đã được đánh giá và các đánh giá của người dùng (userId-product_ids-ratings)
         const ratedProducts = await this.userProductRelationshipService.getRatedProductsByUser(userId);
@@ -114,7 +115,7 @@ export class UserProductCollabService {
           .map(productId => ({ productId, weight: recommendedProducts[productId] }))
           .sort((a, b) => b.weight - a.weight);
       
-        const recommendedProductIds = sortedProducts.slice(0, 10).map(item => new Types.ObjectId(item.productId));
+        const recommendedProductIds = sortedProducts.slice(0, 5).map(item => allProducts.find(product => product.id === item.productId));
 
         // Lưu dô db để truy xuất nhanh ko cần tính lại. Suy nghĩ lại chia hàm ra
         await this.userProductCollabModel.findOneAndUpdate(
@@ -123,12 +124,12 @@ export class UserProductCollabService {
           { upsert: true },
         );
       
-        const recommendedProductsDetails = await this.productService.getProductBySimilarIds(recommendedProductIds);
-      
-        return recommendedProductsDetails;
+
+        return recommendedProductIds;
       }
 
       async getAllRecommendProductByCollab(userId: string): Promise<Product[]> {
+        const allProducts = await this.productService.getAllProducts();
 
         // Truy vấn cơ sở dữ liệu để lấy tất cả các sản phẩm đã được đánh giá và các đánh giá của người dùng (userId-product_ids-ratings)
         const ratedProducts = await this.userProductRelationshipService.getRatedProductsByUser(userId);
@@ -160,12 +161,11 @@ export class UserProductCollabService {
         const sortedProducts = Object.keys(recommendedProducts)
           .map(productId => ({ productId, weight: recommendedProducts[productId] }))
           .sort((a, b) => b.weight - a.weight);
+        
       
-        const recommendedProductIds = sortedProducts.map(item => new Types.ObjectId(item.productId));
-
-        const recommendedProductsDetails = await this.productService.getProductBySimilarIds(recommendedProductIds);
+        const recommendedProductIds = sortedProducts.map(item => allProducts.find(product => product.id === item.productId));
       
-        return recommendedProductsDetails;
+        return recommendedProductIds;
       }
       
       

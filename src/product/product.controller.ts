@@ -158,4 +158,19 @@ export class ProductController {
     async searchProduct(@Query('keyword') keyword: string){
         return await this.productService.searchProduct(keyword);
     }
+
+  // @Get('/product/budgetThisMonth')
+  // async getBudgetThisMonth() {
+  //   return await this.productService.budgetThisMonth();
+  // }
+
+  @Get('/product/totalBudget')
+  async getTotalBudget() {
+    return await this.productService.totalBudget();
+  }
+
+  @Get('/product/fiveLatestProducts')
+  async getFiveLastestProduct() {
+    return await this.productService.fiveLastestProducts();
+  }
 }

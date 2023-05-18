@@ -16,7 +16,7 @@ export class UserProductCollabController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Get('/all')
+    @Get('/collab/all')
     @Roles('customer')
     async getAllRecommendProductByCollab(@Request() req:any){
         return await this.userProductCollabService.getAllRecommendProductByCollab(req.user.sub);

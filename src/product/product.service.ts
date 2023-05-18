@@ -103,4 +103,76 @@ export class ProductService {
     return await this.productModel.find({ _id: { $in: similarProductIds } }).lean();
   }
 
+  // Get products by collan id
+  async getProductByCollabSimilarIds(similarProductIds: string[]): Promise<Product[]>{
+    console.log("collab pass id: ", similarProductIds);
+    return await this.productModel.find({ _id: { $in: similarProductIds } }).exec();
+  }
+
+
+  async budgetThisMonth(): Promise<{ budget: number; percentage: number }> {
+    // Calculate the budget for the current month
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    const currentMonthProducts = await this.productModel
+      .find({
+        createdAt: {
+          $gte: new Date(`${currentYear}-${String(currentMonth).padStart(2, '0')}-01T00:00:00.000Z`),
+          $lte: new Date(
+            `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01T00:00:00.000Z`,
+          ),
+        },
+      })
+      .exec();
+    const currentMonthBudget = currentMonthProducts.reduce(
+      (total, product) => total + product.discount,
+      0,
+    );
+
+    // Calculate the budget for the previous month
+    const previousMonth = currentMonth - 1 <= 0 ? 12 : currentMonth - 1;
+    const previousYear =
+      previousMonth === 12 ? currentYear - 1 : currentYear;
+    const previousMonthProducts = await this.productModel
+      .find({
+        createdAt: {
+          $gte: new Date(
+            `${previousYear}-${String(previousMonth).padStart(2, '0')}-01T00:00:00.000Z`,
+          ),
+          $lte: new Date(`${currentYear}-${String(currentMonth).padStart(2, '0')}-01T00:00:00.000Z`),
+        },
+      })
+      .exec();
+    const previousMonthBudget = previousMonthProducts.reduce(
+      (total, product) => total + product.discount,
+      0,
+    );
+
+    // Calculate the percentage change between the two budgets
+    const percentage =
+      ((currentMonthBudget - previousMonthBudget) / previousMonthBudget) * 100;
+
+    return { budget: currentMonthBudget, percentage };
+  }
+
+  async totalBudget(): Promise<number> {
+    const products = await this.productModel.find().exec();
+    let totalDiscount = 0;
+  
+    products.forEach((product) => {
+      totalDiscount += product.discount;
+    });
+  
+    return totalDiscount;
+  }
+
+  async fiveLastestProducts(): Promise<ProductDocument[]> {
+    const products = await this.productModel.find().sort({ createdAt: -1 }).limit(5);
+    return products;
+  }
+  
+  
+
+
 }

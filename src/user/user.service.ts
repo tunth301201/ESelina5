@@ -82,5 +82,39 @@ export class UserService {
         const [month, day, year] = inputDate.split('-').map((str) => parseInt(str));
         return new Date(year, month - 1, day);
     }
+
+    async totalUserThisMonth(): Promise<{total: number, percentChange: number}> {
+        // get current year and month
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+    
+        // get first day of current month
+        const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
+    
+        // get first day of previous month
+        const firstDayOfPreviousMonth = new Date(currentYear, currentMonth - 2, 1);
+    
+        // get total number of users created this month
+        const totalCurrentMonthUsers = await this.userModel.countDocuments({
+            createdAt: { $gte: firstDayOfMonth, $lte: new Date() }
+        });
+    
+        // get total number of users created in the previous month
+        const totalPreviousMonthUsers = await this.userModel.countDocuments({
+            createdAt: { $gte: firstDayOfPreviousMonth, $lte: new Date(firstDayOfMonth.getTime() - 1) }
+        });
+    
+        // calculate the percentage change
+        const percentChange = ((totalCurrentMonthUsers - totalPreviousMonthUsers) / totalPreviousMonthUsers) * 100;
+    
+        return { total: totalCurrentMonthUsers, percentChange };
+    }
+
+    async totalUser(): Promise<number> {
+        const totalUsers = await this.userModel.countDocuments().exec();
+        return totalUsers;
+      }
+      
+    
     
 }

@@ -99,4 +99,73 @@ export class OrderService {
       await this.cartService.deleteCartByUserId(userId);
       return await this.orderModel.deleteMany({ user_id: userId }).exec();
     }
+
+    async totalProfit(): Promise<number> {
+      const deliveredOrders = await this.orderModel.find({ order_status: 'delivered' });
+      const totalProfit = deliveredOrders.reduce((total, order) => total + order.total_price, 0);
+      return totalProfit;
+    }
+
+    async groupSaleByMonths(): Promise<number[][]> {
+      const currentYear = new Date().getFullYear();
+      const previousYear = currentYear - 1;
+    
+      const currentYearSales = await this.orderModel.aggregate([
+        {
+          $match: {
+            order_status: 'delivered',
+            createdAt: {
+              $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
+              $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: { $month: '$createdAt' },
+            totalSales: { $sum: '$total_price' },
+          },
+        },
+      ]);
+    
+      const previousYearSales = await this.orderModel.aggregate([
+        {
+          $match: {
+            order_status: 'delivered',
+            createdAt: {
+              $gte: new Date(`${previousYear}-01-01T00:00:00.000Z`),
+              $lte: new Date(`${previousYear}-12-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: { $month: '$createdAt' },
+            totalSales: { $sum: '$total_price' },
+          },
+        },
+      ]);
+    
+      const salesByMonth = [];
+      for (let i = 1; i <= 12; i++) {
+        const currentMonthSales = currentYearSales.find((s) => s._id === i);
+        const previousMonthSales = previousYearSales.find((s) => s._id === i);
+        const currentMonthTotal = currentMonthSales?.totalSales || 0;
+        const previousMonthTotal = previousMonthSales?.totalSales || 0;
+        salesByMonth.push([i, currentMonthTotal, previousMonthTotal]);
+      }
+    
+      return salesByMonth;
+    }
+    
+    async sixLatestOrders(): Promise<Order[]> {
+      const latestOrders = await this.orderModel.find({})
+        .sort({createdAt: -1})
+        .limit(6)
+        .populate('user_id')
+        .exec();
+      return latestOrders;
+    }
+    
+    
 }

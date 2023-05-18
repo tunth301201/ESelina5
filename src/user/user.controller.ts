@@ -69,4 +69,15 @@ export class UserController {
   async searchUser(@Query('keyword') keyword: string) {
       return await this.userService.searchUser(keyword);    
   }
+
+
+  @Get('/user/totalUserThisMonth')
+  async getTotalUserThisMonth() {
+    return await this.userService.totalUserThisMonth();
+  }
+
+  @Get('/user/totalUser')
+  async getTotalUser() {
+    return await this.userService.totalUser();
+  }
 }
