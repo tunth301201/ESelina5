@@ -212,7 +212,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
                 >
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker 
-                    disableFuture
                     label="End Date"
                     openTo="year"
                     views={['year', 'month', 'day']}

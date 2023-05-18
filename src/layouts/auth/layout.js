@@ -93,7 +93,7 @@ export const Layout = (props) => {
               sx={{ mb: 3 }}
               variant="subtitle1"
             >
-              Whatever you've got in mind. We've got inside.
+              Whatever you&apos;ve got in mind. We&apos;ve got inside.
             </Typography>
             <img
               alt=""

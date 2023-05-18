@@ -131,6 +131,54 @@ const Page = () => {
     // Return the formatted date and time string
     return formattedDateTime;
   }
+
+  function ActionsCell(props) {
+    const [anchorEl, setAnchorEl] = useState(null);
+    const handleMenuOpen = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+    const handleMenuClose = () => {
+      setAnchorEl(null);
+    };
+    const handleViewClick = async () => {
+      await getOnePromotion(props.row.id).then((res) => {
+        setSelectedPromotion(res.data);
+      })
+      setOpenView(true);
+      handleMenuClose();
+    };
+    const handleDeleteClick = () => {
+      const deletePromotion = {
+        id: props.row.id,
+        name: props.row.name,
+      };
+      setSelectedDeletePromotion(deletePromotion);
+      setOpenDelete(true);
+      handleMenuClose();
+    };
+    return (
+      <div>
+        <IconButton
+          aria-controls={`actions-menu-${props.id}`}
+          aria-haspopup="true"
+          aria-label="Actions"
+          onClick={handleMenuOpen}
+        >
+          <MoreVert />
+        </IconButton>
+        <Menu
+          id={`actions-menu-${props.id}`}
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleViewClick}>View</MenuItem>
+          <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
+        </Menu>
+      </div>
+    );
+  }
  
   const columns = [
     { field: 'name', headerName: 'Name', flex: 1, sortable: true, align: 'left', headerAlign: 'center' },
@@ -176,53 +224,7 @@ const Page = () => {
       headerAlign: 'center',
       marginRight: 10,
       disableColumnMenu: true,
-      renderCell: (params) => {
-        const [anchorEl, setAnchorEl] = useState(null);
-        const handleMenuOpen = (event) => {
-          setAnchorEl(event.currentTarget);
-        };
-        const handleMenuClose = () => {
-          setAnchorEl(null);
-        };
-        const handleViewClick = async () => {
-          await getOnePromotion(params.row.id).then((res) => {
-            setSelectedPromotion(res.data);
-          })
-          setOpenView(true);
-          handleMenuClose();
-        };
-        const handleDeleteClick = () => {
-          const deletePromotion = {
-            id: params.row.id,
-            name: params.row.name,
-          };
-          setSelectedDeletePromotion(deletePromotion);
-          setOpenDelete(true);
-          handleMenuClose();
-        };
-        return (
-          <div>
-            <IconButton
-              aria-controls={`actions-menu-${params.id}`}
-              aria-haspopup="true"
-              aria-label="Actions"
-              onClick={handleMenuOpen}
-            >
-              <MoreVert />
-            </IconButton>
-            <Menu
-              id={`actions-menu-${params.id}`}
-              anchorEl={anchorEl}
-              keepMounted
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              <MenuItem onClick={handleViewClick}>View</MenuItem>
-              <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
-            </Menu>
-          </div>
-        );
-      },
+      renderCell: (params) => <ActionsCell {...params} />,
     },
   ];
 

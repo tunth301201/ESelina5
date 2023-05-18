@@ -333,3 +333,74 @@ export const updateOrderStatus = async (idOrder) => {
         console.log(err)
     })
 }
+
+// ===============Dashboard===================
+export const getTotalBudget = async () => {
+  return await axios.get("http://localhost:4000/product/product/totalBudget")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getFiveLatestProducts = async () => {
+  return await axios.get("http://localhost:4000/product/product/fiveLatestProducts")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getTotalUser = async () => {
+  return await axios.get("http://localhost:4000/user/user/totalUser")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getTotalUserThisMonth = async () => {
+  return await axios.get("http://localhost:4000/user/user/totalUserThisMonth")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getTotalProfit = async () => {
+  return await axios.get("http://localhost:4000/order/order/totalProfit")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getTotalProfitByMonth = async () => {
+  return await axios.get("http://localhost:4000/order/order/totalByMonth")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+export const getSixLatestOrder = async () => {
+  return await axios.get("http://localhost:4000/order/order/sixLastestOrders")
+    .then(res => {
+        return res;
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}

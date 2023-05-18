@@ -99,7 +99,7 @@ import {
                         <img
                         src={`data:${product.images[0].contentType};base64,${product.images[0].data}`}
                         alt={product.name}
-                        style={{ width: 80, height: 80, marginRight: 10 }}
+                        style={{ width: 80, height: 80, marginRight: 10, borderRadius: 9 }}
                         />
                     </label>
 
@@ -107,7 +107,7 @@ import {
                         <img
                         src={`data:${product.images[1].contentType};base64,${product.images[1].data}`}
                         alt={product.name}
-                        style={{ width: 80, height: 80, marginRight: 10 }}
+                        style={{ width: 80, height: 80, marginRight: 10, borderRadius: 9 }}
                         />
                     </label>
 
@@ -115,7 +115,7 @@ import {
                         <img
                         src={`data:${product.images[2].contentType};base64,${product.images[2].data}`}
                         alt={product.name}
-                        style={{ width: 80, height: 80, marginRight: 10 }}
+                        style={{ width: 80, height: 80, marginRight: 10, borderRadius: 9 }}
                         />
                     </label>
 
@@ -123,7 +123,7 @@ import {
                         <img
                         src={`data:${product.images[3].contentType};base64,${product.images[3].data}`}
                         alt={product.name}
-                        style={{ width: 80, height: 80, marginRight: 10 }}
+                        style={{ width: 80, height: 80, marginRight: 10, borderRadius: 9 }}
                         />
                     </label>
                 </Grid>

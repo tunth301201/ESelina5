@@ -16,9 +16,14 @@ import {
   ListItemText,
   SvgIcon
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 export const OverviewLatestProducts = (props) => {
   const { products = [], sx } = props;
+  const router = useRouter();
+  const handleViewAllProducts = () => {
+      router.push('/product');
+  }
 
   return (
     <Card sx={sx}>
@@ -26,8 +31,8 @@ export const OverviewLatestProducts = (props) => {
       <List>
         {products.map((product, index) => {
           const hasDivider = index < products.length - 1;
-          const ago = formatDistanceToNow(product.updatedAt);
-
+          const ago = formatDistanceToNow(new Date(product.updatedAt));
+         
           return (
             <ListItem
               divider={hasDivider}
@@ -35,28 +40,11 @@ export const OverviewLatestProducts = (props) => {
             >
               <ListItemAvatar>
                 {
-                  product.image
-                    ? (
-                      <Box
-                        component="img"
-                        src={product.image}
-                        sx={{
-                          borderRadius: 1,
-                          height: 48,
-                          width: 48
-                        }}
-                      />
-                    )
-                    : (
-                      <Box
-                        sx={{
-                          borderRadius: 1,
-                          backgroundColor: 'neutral.200',
-                          height: 48,
-                          width: 48
-                        }}
-                      />
-                    )
+                      <img
+                        src={`data:${product.images[0].contentType};base64,${product.images[0].data}`}
+                        alt={product.name}
+                        style={{ width: 48, height: 48, borderRadius: 10 }}
+                        />
                 }
               </ListItemAvatar>
               <ListItemText
@@ -65,11 +53,6 @@ export const OverviewLatestProducts = (props) => {
                 secondary={`Updated ${ago} ago`}
                 secondaryTypographyProps={{ variant: 'body2' }}
               />
-              <IconButton edge="end">
-                <SvgIcon>
-                  <EllipsisVerticalIcon />
-                </SvgIcon>
-              </IconButton>
             </ListItem>
           );
         })}
@@ -77,6 +60,7 @@ export const OverviewLatestProducts = (props) => {
       <Divider />
       <CardActions sx={{ justifyContent: 'flex-end' }}>
         <Button
+         onClick={handleViewAllProducts.bind(null)}
           color="inherit"
           endIcon={(
             <SvgIcon fontSize="small">

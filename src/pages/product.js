@@ -136,6 +136,74 @@ const Page = () => {
     return formattedDateTime;
   }
 
+  function ActionsCell(props) {
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [productInOrder, setProductInOrder] = useState(false);
+  
+    const handleMenuOpen = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+    const handleMenuClose = () => {
+      setAnchorEl(null);
+    };
+    const handleViewClick = async () => {
+      await getOneProduct(props.id).then((res) => {
+        setSelectedProduct(res.data);
+      });
+  
+      setOpenView(true);
+      handleMenuClose();
+    };
+    const handleEditClick = async () => {
+      await getOneProduct(props.id).then((res) => {
+        setSelectedEditProduct(res.data);
+      });
+      setOpenEdit(true);
+      handleMenuClose();
+    };
+  
+    useEffect(() => {
+      checkExistProductInOrders(props.id).then((res) => {
+        setProductInOrder(res.data);
+      });
+    }, [props.id]);
+  
+    const handleDeleteClick = () => {
+      const deleteProduct = {
+        id: props.id,
+        name: props.name,
+      };
+      setSelectedDeleteProduct(deleteProduct);
+      setOpenDelete(true);
+      handleMenuClose();
+    };
+  
+    return (
+      <div>
+        <IconButton
+          aria-controls={`actions-menu-${props.id}`}
+          aria-haspopup="true"
+          aria-label="Actions"
+          onClick={handleMenuOpen}
+        >
+          <MoreVert />
+        </IconButton>
+        <Menu
+          id={`actions-menu-${props.id}`}
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleViewClick}>View</MenuItem>
+          <MenuItem onClick={handleEditClick}>Edit</MenuItem>
+          {!productInOrder && (
+            <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
+          )}
+        </Menu>
+      </div>
+    );
+  }
 
   const columns = [
     { 
@@ -150,7 +218,7 @@ const Page = () => {
         <img
           src={params.row.image}
           alt={params.row.name}
-          style={{ width: 80, height: 80, marginRight: 10 }}
+          style={{ width: 80, height: 80, marginRight: 10, borderRadius: 9 }}
         />
         
         <Typography variant="subtitle2">
@@ -188,75 +256,7 @@ const Page = () => {
       headerAlign: 'center',
       marginRight: 10,
       disableColumnMenu: true,
-      renderCell: (params) => {
-        const [anchorEl, setAnchorEl] = useState(null);
-        const [productInOrder, setProductInOrder] = useState(false);
-        
-        const handleMenuOpen = (event) => {
-          setAnchorEl(event.currentTarget);
-        };
-        const handleMenuClose = () => {
-          setAnchorEl(null);
-        };
-        const handleViewClick = async () => {
-          await getOneProduct(params.row.id).then((res) => {
-            setSelectedProduct(res.data);
-          })
-          
-          setOpenView(true);
-          handleMenuClose();
-        };
-        const handleEditClick = async () => {
-          await getOneProduct(params.row.id).then((res) => {
-            setSelectedEditProduct(res.data);
-          })
-          setOpenEdit(true);
-          handleMenuClose();
-        };
-
-        useEffect(() => {
-            checkExistProductInOrders(params.row.id).then((res) => {
-                setProductInOrder(res.data);
-              })
-        },[params.row.id])
-        
-
-        const handleDeleteClick = () => {
-          const deleteProduct = {
-            id: params.row.id,
-            name: params.row.name,
-          };
-          setSelectedDeleteProduct(deleteProduct);
-          setOpenDelete(true);
-          handleMenuClose();
-        };
-        return (
-          <div>
-            <IconButton
-              aria-controls={`actions-menu-${params.id}`}
-              aria-haspopup="true"
-              aria-label="Actions"
-              onClick={handleMenuOpen}
-            >
-              <MoreVert />
-            </IconButton>
-            <Menu
-              id={`actions-menu-${params.id}`}
-              anchorEl={anchorEl}
-              keepMounted
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              <MenuItem onClick={handleViewClick}>View</MenuItem>
-              <MenuItem onClick={handleEditClick}>Edit</MenuItem>
-              {!productInOrder && (
-                <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
-              )}
-              
-            </Menu>
-          </div>
-        );
-      },
+      renderCell: (params) => <ActionsCell {...params} />,
     },
   ];
 

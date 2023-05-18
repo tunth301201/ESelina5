@@ -17,15 +17,40 @@ import {
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
+import { useRouter } from 'next/navigation';
 
 const statusMap = {
   waiting: 'warning',
+  shipping: 'primary',
   delivered: 'success',
   return: 'error'
 };
 
+function formatDateTimeDislay(inputString) {
+  // Convert input string to JavaScript Date object
+  var date = new Date(inputString);
+
+  // Extract individual components (year, month, day, hours, minutes, seconds) from the Date object
+  var year = date.getFullYear();
+  var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed, so we add 1 and pad with leading zero
+  var day = ("0" + date.getDate()).slice(-2); // Pad with leading zero
+  var hours = ("0" + date.getHours()).slice(-2); // Pad with leading zero
+  var minutes = ("0" + date.getMinutes()).slice(-2); // Pad with leading zero
+  var seconds = ("0" + date.getSeconds()).slice(-2); // Pad with leading zero
+
+  // Format the date and time components into a user-friendly string
+  var formattedDateTime = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+
+  // Return the formatted date and time string
+  return formattedDateTime;
+}
+
 export const OverviewLatestOrders = (props) => {
   const { orders = [], sx } = props;
+  const router = useRouter();
+  const handleViewAllOrders = () => {
+    router.push('/order');
+  }
 
   return (
     <Card sx={sx}>
@@ -56,20 +81,20 @@ export const OverviewLatestOrders = (props) => {
                 return (
                   <TableRow
                     hover
-                    key={order.id}
+                    key={order._id}
                   >
                     <TableCell>
-                      {order.ref}
+                      {order.order_number}
                     </TableCell>
                     <TableCell>
-                      {order.customer.name}
+                      {order.user_id.firstname + ' ' + order.user_id.lastname}
                     </TableCell>
                     <TableCell>
-                      {order.createdAt}
+                      {formatDateTimeDislay(order.createdAt)}
                     </TableCell>
                     <TableCell>
-                      <SeverityPill color={statusMap[order.status]}>
-                        {order.status}
+                      <SeverityPill color={statusMap[order.order_status]}>
+                        {order.order_status}
                       </SeverityPill>
                     </TableCell>
                   </TableRow>
@@ -82,6 +107,7 @@ export const OverviewLatestOrders = (props) => {
       <Divider />
       <CardActions sx={{ justifyContent: 'flex-end' }}>
         <Button
+        onClick={handleViewAllOrders.bind(null)}
           color="inherit"
           endIcon={(
             <SvgIcon fontSize="small">
