@@ -121,7 +121,7 @@ const Page = () => {
         setFeedbacks(res.data);
       })
     })
-  },[]);
+  },[product]);
 
 
 

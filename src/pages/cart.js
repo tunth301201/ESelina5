@@ -61,6 +61,7 @@ const Page = () => {
 
   const [reviewNewOrder, setReviewNewOrder] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
+  const [cartUpdated, setCartUpdated] = useState(false);
 
   const handleDecrement = (index, productId) => {
     const newQuantities = [...quantities];
@@ -241,7 +242,7 @@ const Page = () => {
       console.log("new Order: ", newOrder);
       createOrder(newOrder).then((res) => {
         
-
+        setCartUpdated(!cartUpdated);
         getOrderByOrderId(res.data._id).then(async (res) => {
           setReviewNewOrder(res.data);
           const { order_items } = res.data;
@@ -316,6 +317,7 @@ const Page = () => {
 }
    return (
   <>
+  <DashboardLayout stateCartUpdated={cartUpdated}>
     <Head>
       <title>
         Cart | SelinaShop
@@ -964,13 +966,14 @@ const Page = () => {
         </Stack>
       </Container>
     </Box>
+    </DashboardLayout>
   </>
 )};
 
-Page.getLayout = (page) => (
-  <DashboardLayout>
-    {page}
-  </DashboardLayout>
-);
+// Page.getLayout = (page) => (
+//   <DashboardLayout>
+//     {page}
+//   </DashboardLayout>
+// );
 
 export default Page;
