@@ -361,7 +361,7 @@ const Page = () => {
                               xs={12}
                               sm={8}>
                           {cartItems?.map((c, index) => (
-                            <Grid item xs={12} sm={12}>
+                            <Grid item xs={12} sm={12} key={c.productDetail._id}>
                               <Card sx={{ borderRadius: 2, position: "relative" }}>
                                 <Box sx={{ position: "absolute", top: 8, right: 8 }} onClick={handleDeleteCartItem.bind(null, c.productDetail._id)} >
                                   <SvgIcon fontSize="small">

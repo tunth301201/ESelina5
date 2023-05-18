@@ -101,7 +101,7 @@ const Page = () => {
     addProductToCart(addCartItem).then((res) => {
       setCartUpdated(!cartUpdated);
     })
-  };
+  }; 
 
   function ProductRating({ productId }) {
     const [rating, setRating] = useState(null);
@@ -121,12 +121,12 @@ const Page = () => {
 
   return (
   <>
+  <DashboardLayout stateCartUpdated={cartUpdated}>
     <Head>
       <title>
         Home | SelinaShop
       </title>
     </Head>
-    <TopNav onCartUpdated={cartUpdated} />
     <Box
       component="main"
       sx={{
@@ -605,7 +605,7 @@ const Page = () => {
                             
                             <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
                               <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
-                                <span>Add Cart</span>
+                                <span>Add to Cart</span>
                                 
                               </button>
                               <button onClick={handleViewProduct.bind(null, product._id)} class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">
@@ -734,7 +734,7 @@ const Page = () => {
                                   
                                   <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
                                     <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
-                                      <span>Add Cart</span>
+                                      <span>Add to Cart</span>
                                     </button>
                                     <button class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">
                                       <svg xmlns="http://www.w3.org/2000/svg" class="" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -780,7 +780,7 @@ const Page = () => {
                       variant="square"
                     />
                     <Typography variant="h5">
-                      Today's Products
+                      Today Products
                     </Typography>
                   </Stack>
                   <Stack
@@ -839,7 +839,7 @@ const Page = () => {
                             
                             <div class="flex space-x-2 text-sm font-medium justify-center mt-5">
                               <button onClick={handleAddToCart.bind(null, product._id, 1)} class="transition ease-in duration-300 inline-flex items-center text-sm font-medium mb-2 md:mb-0 bg-purple-500 px-5 py-2 hover:shadow-lg tracking-wider text-white rounded-full hover:bg-purple-600 ">
-                                <span>Add Cart</span>
+                                <span>Add to Cart</span>
                               </button>
                               <button class="transition ease-in duration-300 bg-white-700 border border-gray-700 hover:text-purple-500  hover:shadow-lg text-gray-400 rounded-full w-9 h-9 text-center p-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -870,13 +870,14 @@ const Page = () => {
         </Grid>
       </Container>
     </Box>
+    </DashboardLayout>
   </>
 )};
 
-Page.getLayout = (page) => (
-  <DashboardLayout>
-    {page}
-  </DashboardLayout>
-);
+// Page.getLayout = (page) => (
+//   <DashboardLayout onCartUpdated={cartUpdated}>
+//     {page}
+//   </DashboardLayout>
+// );
 
 export default Page;

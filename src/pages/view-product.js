@@ -100,7 +100,7 @@ const Page = () => {
   const [productRating, setProductRating] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
-  
+  const [cartUpdated, setCartUpdated] = useState(false);
 
 
   useEffect(() => {
@@ -158,6 +158,7 @@ const Page = () => {
           quantity: quantity
         }
         addProductToCart(addCartItem).then((res) => {
+          setCartUpdated(!cartUpdated);
         })
       };
 
@@ -199,6 +200,7 @@ const Page = () => {
       
    return (
   <>
+  <DashboardLayout stateCartUpdated={cartUpdated}>
     <Head>
       <title>
         Product | SelinaShop
@@ -336,7 +338,7 @@ const Page = () => {
                   </TabPanel>
                   <TabPanel value={value} index={1} >
                     {feedbacks?.map((feedback) => (
-                      <Card sx={{ p: 2, marginBottom: 2 }}>
+                      <Card sx={{ p: 2, marginBottom: 2 }} key={feedback._id}>
                       <div style={{ width: '100%', display: 'flex', alignItems: 'center'}}>
                           <Avatar
                           src='/assets/avatars/avatar-neha-punita.png'
@@ -530,13 +532,14 @@ const Page = () => {
         </Stack>
       </Container>
     </Box>
+    </DashboardLayout>
   </>
 )};
 
-Page.getLayout = (page) => (
-  <DashboardLayout>
-    {page}
-  </DashboardLayout>
-);
+// Page.getLayout = (page) => (
+//   <DashboardLayout>
+//     {page}
+//   </DashboardLayout>
+// );
 
 export default Page;

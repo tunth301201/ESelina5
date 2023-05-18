@@ -26,7 +26,7 @@ const LayoutContainer = styled('div')({
 });
 
 export const Layout = withAuthGuard((props) => {
-  const { children } = props;
+  const { children, stateCartUpdated } = props;
   const pathname = usePathname();
   const [openNav, setOpenNav] = useState(false);
 
@@ -49,7 +49,7 @@ export const Layout = withAuthGuard((props) => {
 
   return (
     <>
-      <TopNav onNavOpen={() => setOpenNav(true)} />
+      <TopNav onNavOpen={() => setOpenNav(true)} onCartUpdated={stateCartUpdated}/>
       <SideNav
         onClose={() => setOpenNav(false)}
         open={openNav}

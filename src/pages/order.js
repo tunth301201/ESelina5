@@ -224,17 +224,10 @@ const Page = () => {
       marginRight: 10,
       disableColumnMenu: true,
       renderCell: (params) => {
-        const [anchorEl, setAnchorEl] = useState(null);
-        const handleMenuOpen = (event) => {
-          setAnchorEl(event.currentTarget);
-        };
-        const handleMenuClose = () => {
-          setAnchorEl(null);
-        };
+        
         const handleViewClick = () => {
           setSelectedOrder(params.row.id);
           setOpenView(true);
-          handleMenuClose();
         };
         return (
           <div>

@@ -26,6 +26,7 @@ const Page = () => {
   const searchC = search ? search : null;
 
   const [productsByTag, setProductsByTag] = useState([]);
+  const [cartUpdated, setCartUpdated] = useState(false);
   
   useEffect(() => {
     if (tagId) {
@@ -85,6 +86,7 @@ const Page = () => {
       quantity: quantity
     }
     addProductToCart(addCartItem).then((res) => {
+      setCartUpdated(!cartUpdated);
     })
   };
   const handleViewProduct = (productId) => {
@@ -112,6 +114,7 @@ const Page = () => {
 
   return (
     <> 
+    <DashboardLayout stateCartUpdated={cartUpdated}>
       <Head>
         <title>
           Promotion
@@ -179,15 +182,16 @@ const Page = () => {
           </Box>
         </Container>
       </Box>
+      </DashboardLayout>
     </>
   );
 };
 
 
-Page.getLayout = (page) => (
-  <DashboardLayout>
-    {page}
-  </DashboardLayout>
-);
+// Page.getLayout = (page) => (
+//   <DashboardLayout>
+//     {page}
+//   </DashboardLayout>
+// );
 
 export default Page;
